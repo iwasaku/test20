@@ -139,8 +139,55 @@ const NAME_CHARS = ['ネ', 'ム', 'レ', 'ス', 'う', 'て', 'な', '★'];
 const NAME_LENGTH = 4;
 const NAME_SLOT_SPIN_INTERVAL = 3; // 未決定枠の文字切替間隔（フレーム）
 
-// ボーナス付きのプレイヤー名
+// ボーナス付きのプレイヤー名（パターン5専用）
 const BONUS_NAMES = ['ネムレス', '★うてな', 'う★てな', 'うて★な', 'うてな★'];
+
+// プレイヤー名に応じたステータス初期値・スキル加算値の5パターン
+// パターン1〜4: 通常（名前ハッシュで決定）、パターン5: 特別名のみで最有利
+// 差は致命的にならない程度に抑える
+const STAT_PATTERNS = [
+    // 1: HP寄り（やや低速）
+    {
+        init: { hp: 110, maxHp: 110, atk: 9, def: 5, spd: 28 },
+        skill: { maxHp: 24, atk: 4, def: 3, spd: 1 }
+    },
+    // 2: ATK寄り（やや低HP・低DEF）
+    {
+        init: { hp: 90, maxHp: 90, atk: 12, def: 4, spd: 30 },
+        skill: { maxHp: 16, atk: 6, def: 2, spd: 2 }
+    },
+    // 3: バランス（従来相当）
+    {
+        init: { hp: 100, maxHp: 100, atk: 10, def: 5, spd: 30 },
+        skill: { maxHp: 20, atk: 5, def: 3, spd: 2 }
+    },
+    // 4: SPD寄り（やや低HP）
+    {
+        init: { hp: 95, maxHp: 95, atk: 10, def: 4, spd: 35 },
+        skill: { maxHp: 18, atk: 5, def: 2, spd: 3 }
+    },
+    // 5: 最有利（特別名専用）
+    {
+        init: { hp: 120, maxHp: 120, atk: 12, def: 6, spd: 32 },
+        skill: { maxHp: 25, atk: 6, def: 4, spd: 3 }
+    }
+];
+
+// プレイヤー名からパターン番号(1〜5)を決定
+const getNamePattern = function (name) {
+    if (BONUS_NAMES.includes(name)) return 5;
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = ((hash << 5) - hash) + name.charCodeAt(i);
+        hash |= 0;
+    }
+    return (Math.abs(hash) % 4) + 1;
+};
+
+// パターン番号からステータス定義を取得
+const getStatPattern = function (pattern) {
+    return STAT_PATTERNS[Math.max(0, Math.min(4, pattern - 1))];
+};
 
 // セーブデータ関連
 const SAVE_KEY = 'slingshot_action_rpg_save';
@@ -1295,10 +1342,17 @@ phina.define('MainScene', {
         this.player = Player().addChildTo(this);
         this.uiGroup = DisplayElement().addChildTo(this);
 
+        // 名前に応じたステータスパターンを決定（新規・続き共通で参照用）
+        this.namePattern = getNamePattern(this.playerName);
+        this.statPattern = getStatPattern(this.namePattern);
+
         // 続きからの場合はセーブデータを適用。開始後はセーブを削除（新規・続きから共通）
         if (p && p.continueData) {
             let d = p.continueData;
             this.playerName = d.playerName || this.playerName;
+            // 続きからでも名前が変わっている可能性があるのでパターンを再計算
+            this.namePattern = getNamePattern(this.playerName);
+            this.statPattern = getStatPattern(this.namePattern);
             this.stageNum = d.stageNum || 1;
             this.score = d.score || 0;
             if (d.stats) {
@@ -1306,6 +1360,14 @@ phina.define('MainScene', {
                 // HPが最大を超えないよう補正
                 this.player.stats.hp = Math.min(this.player.stats.hp, this.player.stats.maxHp);
             }
+        } else {
+            // 新規ゲーム: パターンに応じた初期ステータスを適用
+            let init = this.statPattern.init;
+            this.player.stats.hp = init.hp;
+            this.player.stats.maxHp = init.maxHp;
+            this.player.stats.atk = init.atk;
+            this.player.stats.def = init.def;
+            this.player.stats.spd = init.spd;
         }
         deleteSave();
 
@@ -1892,11 +1954,11 @@ phina.define('MainScene', {
         let stageText = `ちか ${this.stageNum} かい`;
         // スキルは獲得済み（Lv1以上）のものだけ表示
         let skillParts = [];
-        if (p.splitLevel > 0) skillParts.push(`分裂:Lv.${p.splitLevel}`);
-        if (p.shotgunLevel > 0) skillParts.push(`散弾:Lv.${p.shotgunLevel}`);
-        if (p.areaLevel > 0) skillParts.push(`範囲:Lv.${p.areaLevel}`);
-        if (p.pierceLevel > 0) skillParts.push(`貫通:Lv.${p.pierceLevel}`);
-        if (p.healOnKillLevel > 0) skillParts.push(`撃破回復:Lv.${p.healOnKillLevel}`);
+        if (p.splitLevel > 0) skillParts.push(`ぶんれつ:Lv.${p.splitLevel}`);
+        if (p.shotgunLevel > 0) skillParts.push(`さんだん:Lv.${p.shotgunLevel}`);
+        if (p.areaLevel > 0) skillParts.push(`はんい:Lv.${p.areaLevel}`);
+        if (p.pierceLevel > 0) skillParts.push(`かんつう:Lv.${p.pierceLevel}`);
+        if (p.healOnKillLevel > 0) skillParts.push(`キルゲイン:Lv.${p.healOnKillLevel}`);
         if (p.shieldLevel > 0) skillParts.push(`シールド:${this.player.shieldCount}/${p.shieldLevel}`);
         let skillLine = skillParts.length > 0 ? '\n' + skillParts.join('  ') : '';
         this.statusLabel.text = `${stageText}  ${this.score}ガバス\nHP: ${p.hp}/${p.maxHp}  ATK: ${p.atk}  DEF: ${p.def}  SPD: ${p.spd}${skillLine}`;
@@ -2415,12 +2477,14 @@ phina.define('MainScene', {
 
     stageClearMenu: function () {
         this.gameState = GAME_STATE.MENU;
+        // 名前パターンに応じたスキル加算値を使用
+        const sk = this.statPattern.skill;
         // fill: スキル種別ごとのボタン背景色
         const params = [
-            { key: 'maxHp', label: 'さいだいHP +20', val: 20, fill: '#2e7d32' },       // 緑
-            { key: 'atk', label: 'こうげき +5', val: 5, fill: '#c62828' },           // 赤
-            { key: 'def', label: 'ぼうぎょ +3', val: 3, fill: '#1565c0' },           // 青
-            { key: 'spd', label: 'そくど +2', val: 2, fill: '#00838f' },         // シアン
+            { key: 'maxHp', label: 'さいだいHP +' + sk.maxHp, val: sk.maxHp, fill: '#2e7d32' },       // 緑
+            { key: 'atk', label: 'こうげき +' + sk.atk, val: sk.atk, fill: '#c62828' },           // 赤
+            { key: 'def', label: 'ぼうぎょ +' + sk.def, val: sk.def, fill: '#1565c0' },           // 青
+            { key: 'spd', label: 'そくど +' + sk.spd, val: sk.spd, fill: '#00838f' },         // シアン
             { key: 'healAll', label: 'HPぜんかい', val: true, fill: '#66bb6a' },      // 明るい緑
             { key: 'healOnKillLevel', label: 'キルゲイン +1', val: 1, fill: '#ad1457' } // マゼンタ
         ];
