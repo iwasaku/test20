@@ -1181,7 +1181,7 @@ phina.define('TitleScene', {
         this.backgroundColor = '#222';
 
         Label({
-            text: 'Hematite Smash\n',
+            text: 'Hematite Smash',
             fill: '#fff',
             fontFamily: FONT_FAMILY,
             fontSize: 72,
@@ -1189,6 +1189,15 @@ phina.define('TitleScene', {
             align: 'center',
             lineSpacing: 1.2
         }).addChildTo(this).setPosition(SCREEN_W / 2, SCREEN_H / 4);
+        Label({
+            text: '1.0',
+            fill: '#fff',
+            fontFamily: FONT_FAMILY,
+            fontSize: 32,
+            fontWeight: 'bold',
+            align: 'right',
+            lineSpacing: 1.2
+        }).addChildTo(this).setPosition(SCREEN_W - 60, SCREEN_H / 4 + 38);
 
         Label({
             text: 'なまえをきめよう',
