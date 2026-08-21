@@ -1190,7 +1190,7 @@ phina.define('TitleScene', {
             lineSpacing: 1.2
         }).addChildTo(this).setPosition(SCREEN_W / 2, SCREEN_H / 4);
         Label({
-            text: '1.0',
+            text: '1.1',
             fill: '#fff',
             fontFamily: FONT_FAMILY,
             fontSize: 32,
@@ -2572,7 +2572,6 @@ phina.define('ResultScene', {
         let stageNum = (p && p.stageNum != null) ? p.stageNum : 0;
         let score = (p && p.score != null) ? p.score : 0;
         let cleared = !!(p && p.cleared);
-        cleared = true;
 
         // クリア時は game_clear、それ以外は game_over のスプライトを表示
         let resultImageKey = cleared ? 'game_clear' : 'game_over';
