@@ -1,197 +1,6 @@
 phina.globalize();
 
-const SCREEN_W = 640;
-const SCREEN_H = 960;
-const SCREEN_CENTER_X = SCREEN_W / 2;   // スクリーン幅の半分
-const SCREEN_CENTER_Y = SCREEN_H / 2;  // スクリーン高さの半分
-const MAX_STAGE = 100;
-
-// ゲーム状態
-const GAME_STATE = {
-    WAIT: 'WAIT',
-    PULLING: 'PULLING',
-    MOVING: 'MOVING',
-    ENEMY_TURN: 'ENEMY_TURN',
-    ENEMY_MOVING: 'ENEMY_MOVING',
-    FADE_IN: 'FADE_IN',
-    FADE_OUT: 'FADE_OUT',
-    MENU: 'MENU',
-    GAME_OVER: 'GAME_OVER'
-};
-
-// デバッグ: true で敵の当たり判定矩形（hitTestElement 相当）を表示
-const DEBUG_SHOW_HITBOX = false;
-
-// ==========================================
-// アセット定義
-// ==========================================
-const FONT_FAMILY = "'misaki_gothic','Meiryo',sans-serif";
-const ASSETS = {
-    font: {
-        misaki_gothic: "https://cdn.leafscape.be/misaki/misaki_gothic_web.woff2"
-    },
-    image: {
-        'playerImage': 'https://iwasaku.github.io/test/UvU/resource/angus_128.png',
-        'obstacle_sheet': 'resource/images/obstacle_sheet.png',
-        'heal_item_sheet': 'resource/images/heal_item_sheet.png',
-
-        // 通常敵画像
-        'enemy_ptn_0': 'resource/images/enemy_ptn_0.png',
-        'enemy_etc_0': 'resource/images/enemy_etc_0.png',
-        'enemy_ll_0': 'resource/images/enemy_ll_0.png',
-        'enemy_blk_0': 'resource/images/enemy_blk_0.png',
-        'enemy_spn_0': 'resource/images/enemy_spn_0.png',
-
-        'enemy_ptn_1': 'resource/images/enemy_ptn_1.png',
-        'enemy_etc_1': 'resource/images/enemy_etc_1.png',
-        'enemy_ll_1': 'resource/images/enemy_ll_1.png',
-        'enemy_blk_1': 'resource/images/enemy_blk_1.png',
-        'enemy_spn_1': 'resource/images/enemy_spn_1.png',
-
-        'enemy_ptn_2': 'resource/images/enemy_ptn_2.png',
-        'enemy_etc_2': 'resource/images/enemy_etc_2.png',
-        'enemy_ll_2': 'resource/images/enemy_ll_2.png',
-        'enemy_blk_2': 'resource/images/enemy_blk_2.png',
-        'enemy_spn_2': 'resource/images/enemy_spn_2.png',
-
-        'enemy_ptn_3': 'resource/images/enemy_ptn_3.png',
-        'enemy_etc_3': 'resource/images/enemy_etc_3.png',
-        'enemy_ll_3': 'resource/images/enemy_ll_3.png',
-        'enemy_blk_3': 'resource/images/enemy_blk_3.png',
-        'enemy_spn_3': 'resource/images/enemy_spn_3.png',
-
-        'enemy_ptn_4': 'resource/images/enemy_ptn_4.png',
-        'enemy_etc_4': 'resource/images/enemy_etc_4.png',
-        'enemy_ll_4': 'resource/images/enemy_ll_4.png',
-        'enemy_blk_4': 'resource/images/enemy_blk_4.png',
-        'enemy_spn_4': 'resource/images/enemy_spn_4.png',
-
-        // ボス画像
-        //
-        'boss_gohan': 'https://iwasaku.github.io/test4/KMT/resource/gohan.png',
-        'boss_glutton': 'https://iwasaku.github.io/test4/KMT/resource/glutton.png',
-        'boss_small': 'https://iwasaku.github.io/test4/KMT/resource/small.png',
-        'boss_ika': 'https://iwasaku.github.io/test4/KMT/resource/ika.png',
-        'boss_assassin': 'https://iwasaku.github.io/test4/KMT/resource/assassin.png',
-        'boss_perfect': 'https://iwasaku.github.io/test4/KMT/resource/perfect.png',
-        'boss_baby': 'https://iwasaku.github.io/test4/KMT/resource/baby.png',
-        'boss_girl': 'https://iwasaku.github.io/test4/KMT/resource/girl.png',
-        'boss_ninja': 'https://iwasaku.github.io/test4/KMT/resource/ninja.png',
-        'boss_last': 'https://iwasaku.github.io/test4/KMT/resource/last.png',
-
-        // ゲームオーバー
-        'game_over': 'https://iwasaku.github.io/test4/KMT/resource/rip.png',
-        'game_clear': 'https://iwasaku.github.io/test4/KMT/resource/maria.png',
-
-        // 爆発
-        "explosion": "https://iwasaku.github.io/test15/HGYG/resource/expl_48.png",
-    },
-    spritesheet: {
-        "explosion_ss":
-        {
-            // フレーム情報
-            "frame": {
-                "width": 48, // 1フレームの画像サイズ（横）
-                "height": 48, // 1フレームの画像サイズ（縦）
-                "cols": 11, // フレーム数（横）
-                "rows": 1, // フレーム数（縦）
-            },
-            // アニメーション情報
-            "animations": {
-                "start": { // アニメーション名
-                    "frames": Array.range(11), // フレーム番号範囲[0,1,2]の形式でもOK
-                    "next": "", // 次のアニメーション。空文字列なら終了。同じアニメーション名ならループ
-                    "frequency": 1, // アニメーション間隔
-                },
-            }
-        },
-    },
-    sound: {
-        'reflect': 'resource/se/reflect.mp3',
-        'explosion': 'https://iwasaku.github.io/test8/COKS/resource/explosion_1.mp3',
-        'defeat_enemy': 'https://iwasaku.github.io/test8/COKS/resource/explosion_0.mp3',
-        'defeat_boss': 'https://iwasaku.github.io/test8/COKS/resource/explosion_2.mp3',
-        'hit': 'resource/se/hit.mp3',
-        'get': 'https://iwasaku.github.io/test7/NEMLESSSTER/resource/coin05.mp3',
-        'damage': 'resource/se/damage.mp3',
-        'launch': 'resource/se/launch.mp3',
-        'enemy_shot': 'resource/se/shot.mp3',
-        'laser': 'resource/se/laser.mp3',
-        'summon': 'resource/se/summon.mp3',
-        'area_explode': 'resource/se/area_explode.mp3'
-    }
-};
-
-// ==========================================
-// ステージ外周・可動領域の制限定数
-// ==========================================
-const TILE_SIZE = 64;
-const LIMIT_LEFT = TILE_SIZE;                  // 64
-const LIMIT_RIGHT = SCREEN_W - TILE_SIZE;      // 576
-const LIMIT_TOP = TILE_SIZE;                   // 64
-const LIMIT_BOTTOM = SCREEN_H - (TILE_SIZE * 2); // 832
-
-// 敵との接触ダメージが再発生するまでのフレーム数 (60FPS想定で約0.75秒)
-const CONTACT_DAMAGE_INTERVAL = 45;
-
-// プレイヤー名スロット（タイトル画面）
-const NAME_CHARS = ['ネ', 'ム', 'レ', 'ス', 'う', 'て', 'な', '★'];
-const NAME_LENGTH = 4;
-const NAME_SLOT_SPIN_INTERVAL = 3; // 未決定枠の文字切替間隔（フレーム）
-
-// ボーナス付きのプレイヤー名（パターン5専用）
-const BONUS_NAMES = ['ネムレス', '★うてな', 'う★てな', 'うて★な', 'うてな★'];
-
-// プレイヤー名に応じたステータス初期値・スキル加算値の5パターン
-// パターン1〜4: 通常（名前ハッシュで決定）、パターン5: 特別名のみで最有利
-// 差は致命的にならない程度に抑える
-const STAT_PATTERNS = [
-    // 1: HP寄り（やや低速）
-    {
-        init: { hp: 110, maxHp: 110, atk: 9, def: 5, spd: 28 },
-        skill: { maxHp: 24, atk: 4, def: 3, spd: 1 }
-    },
-    // 2: ATK寄り（やや低HP・低DEF）
-    {
-        init: { hp: 90, maxHp: 90, atk: 12, def: 4, spd: 30 },
-        skill: { maxHp: 16, atk: 6, def: 2, spd: 2 }
-    },
-    // 3: バランス（従来相当）
-    {
-        init: { hp: 100, maxHp: 100, atk: 10, def: 5, spd: 30 },
-        skill: { maxHp: 20, atk: 5, def: 3, spd: 2 }
-    },
-    // 4: SPD寄り（やや低HP）
-    {
-        init: { hp: 95, maxHp: 95, atk: 10, def: 4, spd: 35 },
-        skill: { maxHp: 18, atk: 5, def: 2, spd: 3 }
-    },
-    // 5: 最有利（特別名専用）
-    {
-        init: { hp: 120, maxHp: 120, atk: 12, def: 6, spd: 32 },
-        skill: { maxHp: 25, atk: 6, def: 4, spd: 3 }
-    }
-];
-
-// プレイヤー名からパターン番号(1〜5)を決定
-const getNamePattern = function (name) {
-    if (BONUS_NAMES.includes(name)) return 5;
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = ((hash << 5) - hash) + name.charCodeAt(i);
-        hash |= 0;
-    }
-    return (Math.abs(hash) % 4) + 1;
-};
-
-// パターン番号からステータス定義を取得
-const getStatPattern = function (pattern) {
-    return STAT_PATTERNS[Math.max(0, Math.min(4, pattern - 1))];
-};
-
 // セーブデータ関連
-const SAVE_KEY = 'slingshot_action_rpg_save';
-
 const hasSaveData = function () {
     try {
         return !!localStorage.getItem(SAVE_KEY);
@@ -357,7 +166,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ゴブリン０', 'アーチャー０', 'ウィザード０', 'ゴーレム０', 'スライム１']
+        enemies: ['ゴブリン０', 'アーチャー０', 'ゴーレム０']
     },
     {
         start: 11, end: 15,
@@ -378,7 +187,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ウィザード０', 'ゴーレム０', 'スライム１', 'ゴブリン１', 'アーチャー１']
+        enemies: ['ゴーレム０', 'ゴブリン１', 'アーチャー１']
     },
     {
         start: 21, end: 25,
@@ -400,7 +209,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['スライム１', 'ゴブリン１', 'アーチャー１', 'ウィザード１', 'ゴーレム１']
+        enemies: [, 'ゴブリン１', 'アーチャー１', 'ゴーレム１']
     },
     {
         start: 31, end: 35,
@@ -421,7 +230,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['アーチャー１', 'ウィザード１', 'ゴーレム１', 'スライム２', 'ゴブリン２']
+        enemies: ['アーチャー１', 'ゴーレム１', 'ゴブリン２']
     },
     {
         start: 41, end: 45,
@@ -442,7 +251,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ゴーレム１', 'スライム２', 'ゴブリン２', 'アーチャー２', 'ウィザード２']
+        enemies: ['ゴーレム１', 'ゴブリン２', 'アーチャー２']
     },
 
     {
@@ -461,10 +270,10 @@ const STAGE_DEFINITIONS = [
     },
     {
         start: 60, end: 60,
-        minEnemies: 3, maxEnemies: 3,
+        minEnemies: 2, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ゴブリン２', 'アーチャー２', 'ウィザード２', 'ゴーレム２', 'スライム３']
+        enemies: ['ゴブリン２', 'アーチャー２', 'ゴーレム２']
     },
     {
         start: 61, end: 65,
@@ -482,10 +291,10 @@ const STAGE_DEFINITIONS = [
     },
     {
         start: 70, end: 70,
-        minEnemies: 4, maxEnemies: 4,
+        minEnemies: 1, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ウィザード２', 'ゴーレム２', 'スライム３', 'ゴブリン３', 'アーチャー３']
+        enemies: ['ゴーレム２', 'ゴブリン３', 'アーチャー３']
     },
     {
         start: 71, end: 75,
@@ -504,10 +313,10 @@ const STAGE_DEFINITIONS = [
     },
     {
         start: 80, end: 80,
-        minEnemies: 4, maxEnemies: 4,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['スライム３', 'ゴブリン３', 'アーチャー３', 'ウィザード３', 'ゴーレム３']
+        minEnemies: 1, maxEnemies: 2,
+        minNormalObs: 0, maxNormalObs: 1,
+        minExplosiveObs: 0, maxExplosiveObs: 2,
+        enemies: ['ゴブリン３', 'アーチャー３', 'ゴーレム３']
     },
     {
         start: 81, end: 85,
@@ -525,10 +334,10 @@ const STAGE_DEFINITIONS = [
     },
     {
         start: 90, end: 90,
-        minEnemies: 4, maxEnemies: 4,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['アーチャー３', 'ウィザード３', 'ゴーレム３', 'スライム４', 'ゴブリン４']
+        minEnemies: 1, maxEnemies: 2,
+        minNormalObs: 0, maxNormalObs: 1,
+        minExplosiveObs: 0, maxExplosiveObs: 2,
+        enemies: ['アーチャー３', 'ゴーレム３', 'ゴブリン４']
     },
     {
         start: 91, end: 95,
@@ -547,10 +356,10 @@ const STAGE_DEFINITIONS = [
 
     {
         start: 100, end: 100,
-        minEnemies: 5, maxEnemies: 6,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['スライム４', 'ゴブリン４', 'アーチャー４', 'ウィザード４', 'ゴーレム４']
+        minEnemies: 2, maxEnemies: 3,
+        minNormalObs: 0, maxNormalObs: 1,
+        minExplosiveObs: 0, maxExplosiveObs: 2,
+        enemies: ['ゴブリン４', 'アーチャー４', 'ゴーレム４']
     },
 ];
 
@@ -560,13 +369,14 @@ const STAGE_DEFINITIONS = [
 const ATTACK_FULL_SCREEN = 0; // 画面全体ダメージ
 const ATTACK_VERTICAL = 1; // 上下弾
 const ATTACK_HORIZONTAL = 2; // 左右弾
-const ATTACK_LASER = 3; // レーザー
+const ATTACK_LASER_180 = 3; // 180°レーザー
 const ATTACK_AREA = 4; // 範囲攻撃
 const ATTACK_AIMED = 5; // 狙い撃ち弾
 const ATTACK_4WAY = 6; // 十字4方向弾
 const ATTACK_DIAGONAL_4WAY = 7; // 斜め4方向弾
 const ATTACK_8WAY = 8; // 8方向弾
 const ATTACK_SUMMON = 9; // 敵召喚
+const ATTACK_LASER_90 = 10; // 180°レーザー
 
 const MOVE_STATIONARY = 0; // 静止
 const MOVE_VERTICAL = 1; // 上下移動
@@ -602,17 +412,17 @@ const ENEMY_DEFINITIONS = [
     { name: 'ゴブリン２', image: 'enemy_etc_2', hp: 65, atk: 22, def: 7, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 0.9, baseScore: 120 },
     { name: 'アーチャー２', image: 'enemy_ll_2', hp: 55, atk: 27, def: 5, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 0.8, baseScore: 130 },
     { name: 'ウィザード２', image: 'enemy_blk_2', hp: 70, atk: 34, def: 8, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 0.8, baseScore: 140 },
-    { name: 'ゴーレム２', image: 'enemy_spn_2', hp: 100, atk: 26, def: 16, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 160 },
+    { name: 'ゴーレム２', image: 'enemy_spn_2', hp: 100, atk: 26, def: 16, freq: 2, attackPattern: ATTACK_LASER_90, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 160 },
 
     // ----- ランク3 -----
-    { name: 'スライム３', image: 'enemy_ptn_3', hp: 58, atk: 20, def: 6, freq: 2, attackPattern: ATTACK_LASER, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 110 },
+    { name: 'スライム３', image: 'enemy_ptn_3', hp: 58, atk: 20, def: 6, freq: 2, attackPattern: ATTACK_LASER_90, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 110 },
     { name: 'ゴブリン３', image: 'enemy_etc_3', hp: 90, atk: 30, def: 10, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 1.0, baseScore: 130 },
     { name: 'アーチャー３', image: 'enemy_ll_3', hp: 75, atk: 36, def: 7, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 1.0, baseScore: 140 },
     { name: 'ウィザード３', image: 'enemy_blk_3', hp: 95, atk: 44, def: 11, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 150 },
     { name: 'ゴーレム３', image: 'enemy_spn_3', hp: 140, atk: 34, def: 22, freq: 2, attackPattern: ATTACK_8WAY, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 170 },
 
     // ----- ランク4（終盤） -----
-    { name: 'スライム４', image: 'enemy_ptn_4', hp: 80, atk: 28, def: 8, freq: 2, attackPattern: ATTACK_LASER, movePattern: MOVE_STATIONARY, hitboxScale: 0.9, baseScore: 120 },
+    { name: 'スライム４', image: 'enemy_ptn_4', hp: 80, atk: 28, def: 8, freq: 2, attackPattern: ATTACK_LASER_180, movePattern: MOVE_STATIONARY, hitboxScale: 0.9, baseScore: 120 },
     { name: 'ゴブリン４', image: 'enemy_etc_4', hp: 125, atk: 40, def: 14, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 1.0, baseScore: 140 },
     { name: 'アーチャー４', image: 'enemy_ll_4', hp: 100, atk: 48, def: 10, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 1.0, baseScore: 150 },
     { name: 'ウィザード４', image: 'enemy_blk_4', hp: 130, atk: 58, def: 15, freq: 2, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 0.9, baseScore: 160 },
@@ -628,14 +438,14 @@ const ENEMY_DEFINITIONS = [
 const BOSS_DEFINITIONS = [
     { stage: 10, name: 'ＧＯ−ＨＡＮ', image: 'boss_gohan', hp: 150, atk: 18, def: 5, freq: 3, sizePattern: [ATTACK_AIMED, ATTACK_VERTICAL, ATTACK_HORIZONTAL], movePattern: MOVE_STATIONARY, sizeScale: 2, hitboxScale: 0.7, baseScore: 300 },
     { stage: 20, name: '食いしん坊', image: 'boss_glutton', hp: 220, atk: 22, def: 8, freq: 3, attackPattern: [ATTACK_VERTICAL, ATTACK_HORIZONTAL, ATTACK_DIAGONAL_4WAY], movePattern: MOVE_HORIZONTAL, sizeScale: 2, hitboxScale: 0.7, baseScore: 400 },
-    { stage: 30, name: 'てのひらサイズ', image: 'boss_small', hp: 280, atk: 28, def: 10, freq: 3, attackPattern: [ATTACK_LASER, ATTACK_AREA], movePattern: MOVE_STATIONARY, sizeScale: 1, hitboxScale: 0.8, baseScore: 500 },
-    { stage: 40, name: 'コウイカ', image: 'boss_ika', hp: 350, atk: 32, def: 12, freq: 3, attackPattern: [ATTACK_VERTICAL, ATTACK_HORIZONTAL, ATTACK_LASER], movePattern: MOVE_VERTICAL, sizeScale: 2, hitboxScale: 0.7, baseScore: 600 },
+    { stage: 30, name: 'てのひらサイズ', image: 'boss_small', hp: 280, atk: 28, def: 10, freq: 3, attackPattern: [ATTACK_LASER_90, ATTACK_AREA], movePattern: MOVE_STATIONARY, sizeScale: 1, hitboxScale: 0.8, baseScore: 500 },
+    { stage: 40, name: 'コウイカ', image: 'boss_ika', hp: 350, atk: 32, def: 12, freq: 3, attackPattern: [ATTACK_VERTICAL, ATTACK_HORIZONTAL, ATTACK_LASER_90], movePattern: MOVE_VERTICAL, sizeScale: 2, hitboxScale: 0.7, baseScore: 600 },
     { stage: 50, name: '刺客', image: 'boss_assassin', hp: 500, atk: 38, def: 25, freq: 3, attackPattern: [ATTACK_FULL_SCREEN, ATTACK_4WAY, ATTACK_SUMMON], movePattern: MOVE_STATIONARY, sizeScale: 3, hitboxScale: 0.7, baseScore: 800 },
-    { stage: 60, name: '究極完全態', image: 'boss_perfect', hp: 650, atk: 45, def: 18, freq: 2, attackPattern: [ATTACK_LASER, ATTACK_8WAY], movePattern: MOVE_STATIONARY, sizeScale: 3, hitboxScale: 0.8, baseScore: 1000 },
+    { stage: 60, name: '究極完全態', image: 'boss_perfect', hp: 650, atk: 45, def: 18, freq: 2, attackPattern: [ATTACK_LASER_180, ATTACK_LASER_90, ATTACK_LASER_90, ATTACK_8WAY], movePattern: MOVE_STATIONARY, sizeScale: 3, hitboxScale: 0.8, baseScore: 1000 },
     { stage: 70, name: '赤ちゃん', image: 'boss_baby', hp: 800, atk: 52, def: 20, freq: 2, attackPattern: [ATTACK_AREA, ATTACK_4WAY, ATTACK_DIAGONAL_4WAY, ATTACK_SUMMON], movePattern: MOVE_HORIZONTAL, sizeScale: 1, hitboxScale: 0.7, baseScore: 1200 },
-    { stage: 80, name: '女子', image: 'boss_girl', hp: 1000, atk: 60, def: 22, freq: 2, attackPattern: [ATTACK_LASER, ATTACK_AREA, ATTACK_8WAY, ATTACK_AIMED], movePattern: MOVE_STATIONARY, sizeScale: 3, hitboxScale: 0.7, baseScore: 1500 },
-    { stage: 90, name: '忍者', image: 'boss_ninja', hp: 1250, atk: 70, def: 30, freq: 2, attackPattern: [ATTACK_FULL_SCREEN, ATTACK_4WAY, ATTACK_DIAGONAL_4WAY, ATTACK_8WAY, ATTACK_SUMMON], movePattern: MOVE_VERTICAL, sizeScale: 2, hitboxScale: 0.6, baseScore: 2000 },
-    { stage: 100, name: 'じっしゃ版', image: 'boss_last', hp: 1800, atk: 85, def: 35, freq: 2, attackPattern: [ATTACK_FULL_SCREEN, ATTACK_LASER, ATTACK_AREA, ATTACK_8WAY, ATTACK_SUMMON], movePattern: MOVE_STATIONARY, sizeScale: 4, hitboxScale: 0.9, baseScore: 3000 }
+    { stage: 80, name: '女子', image: 'boss_girl', hp: 1000, atk: 60, def: 22, freq: 2, attackPattern: [ATTACK_LASER_180, ATTACK_LASER_180, ATTACK_LASER_90, ATTACK_AREA, ATTACK_8WAY, ATTACK_AIMED], movePattern: MOVE_STATIONARY, sizeScale: 3, hitboxScale: 0.7, baseScore: 1500 },
+    { stage: 90, name: '忍者', image: 'boss_ninja', hp: 1250, atk: 70, def: 30, freq: 2, attackPattern: [ATTACK_FULL_SCREEN, ATTACK_LASER_90, ATTACK_4WAY, ATTACK_DIAGONAL_4WAY, ATTACK_8WAY, ATTACK_SUMMON], movePattern: MOVE_VERTICAL, sizeScale: 2, hitboxScale: 0.6, baseScore: 2000 },
+    { stage: 100, name: 'じっしゃ版', image: 'boss_last', hp: 1800, atk: 85, def: 35, freq: 2, attackPattern: [ATTACK_FULL_SCREEN, ATTACK_LASER_180, ATTACK_AREA, ATTACK_8WAY, ATTACK_SUMMON], movePattern: MOVE_STATIONARY, sizeScale: 4, hitboxScale: 0.9, baseScore: 3000 }
 ];
 
 // ==========================================
@@ -951,7 +761,8 @@ phina.define('Enemy', {
         this.turnCount = this.stats.freq;
         this.movePattern = def.movePattern;
         // 撃破時の基本スコア（定義で指定、未指定時は通常敵100 / ボス150）
-        this.baseScore = (def.baseScore != null) ? def.baseScore : (isBoss ? 150 : 100);
+        // ※10点刻みでしか点が入らないので1の桁が必ず0だったので1/10する
+        this.baseScore = Math.floor(((def.baseScore != null) ? def.baseScore : (isBoss ? 150 : 100)) / 10);
         this.contactCooldown = 0; // 接触ダメージの再発生までの待機フレーム数
 
         let speed = 2 + Math.random() * 2;
@@ -974,7 +785,7 @@ phina.define('Enemy', {
         }
 
         // UI（HPバーを足元、残りターン数をその右側に配置。名前は表示しない）
-        let fontSizeSub = isBoss ? 18 : 14;
+        let fontSizeSub = isBoss ? 40 : 30;
         let barWidth = Math.max(targetWidth, 80); // バーが極端に狭くならないよう調整
         let barHeight = isBoss ? 12 : 8;
         let barY = targetHeight / 2 + 10; // 足元側
@@ -1190,7 +1001,7 @@ phina.define('TitleScene', {
             lineSpacing: 1.2
         }).addChildTo(this).setPosition(SCREEN_W / 2, SCREEN_H / 4);
         Label({
-            text: '1.1',
+            text: '1.3',
             fill: '#fff',
             fontFamily: FONT_FAMILY,
             fontSize: 32,
@@ -1402,6 +1213,7 @@ phina.define('MainScene', {
 
             let angle = Math.atan2(dy, dx) + Math.PI;
             let powerRatio = Math.min(1.0, dist / 200);
+            scene.lastDragPowerRatio = powerRatio;
             let arrowLength = Math.min(dist * 1.2, 220);
 
             let tox = px + Math.cos(angle) * arrowLength;
@@ -1592,6 +1404,9 @@ phina.define('MainScene', {
         this.gaugeValue = 0;
         this.gaugeDir = 1;
         this.currentMultiplier = 1.0;
+        this.lastDragPowerRatio = 0;
+        this.burstBoostActive = false;
+        this.burstGhostTimer = 0;
         this.comboCount = 0; // 連続ヒット数（1ヒットごとに攻撃力1.1倍）
         this.isShaking = false; // 画面揺らしの重複実行を防ぐフラグ
         this.shotCount = 0; // 今ステージの攻撃（射出）回数
@@ -1622,6 +1437,27 @@ phina.define('MainScene', {
         this.fadeMask.alpha = 1.0;
 
         this.startFadeIn();
+    },
+
+    spawnPlayerBurstGhost: function (dir) {
+        if (!dir || !this.effectGroup) return;
+
+        let ghost = Sprite('playerImage').addChildTo(this.effectGroup);
+        ghost.setSize(this.player.width, this.player.height);
+        ghost.setPosition(this.player.x, this.player.y);
+        ghost.alpha = 0.8;
+        ghost.rotation = this.player.rotation || 0;
+
+        ghost.tweener.clear()
+            .to({
+                x: this.player.x - dir.x * BURST_GHOST_OFFSET,
+                y: this.player.y - dir.y * BURST_GHOST_OFFSET,
+                alpha: 0,
+                scaleX: 1.35,
+                scaleY: 1.35,
+            }, BURST_GHOST_LIFETIME)
+            .call(() => ghost.remove())
+            .play();
     },
 
     startFadeIn: function () {
@@ -1826,9 +1662,9 @@ phina.define('MainScene', {
                 for (let i = 0; i < extraBossCount; i++) {
                     let extraBoss = Object.assign({}, bossDef, {
                         isBoss: true,
-                        hp: Math.floor(bossDef.hp * 0.75),
-                        atk: Math.floor(bossDef.atk * 0.75),
-                        def: Math.floor(bossDef.def * 0.75)
+                        hp: bossDef.hp,
+                        atk: bossDef.atk,
+                        def: bossDef.def
                     });
                     enemiesToSpawn.push(extraBoss);
                 }
@@ -1848,18 +1684,19 @@ phina.define('MainScene', {
                 }
             }
 
-            // 複数ボス時は雑魚を減らす
-            let normalCount = (extraBossCount >= 1) ? Math.randint(0, 1) : Math.randint(1, 2);
+            let normalCount = Math.randint(stageConfig.minEnemies, stageConfig.maxEnemies);
             for (let i = 0; i < normalCount; i++) {
                 let allowedEnemies = stageConfig.enemies;
-                let enemyDef = ENEMY_DEFINITIONS.find(def => def.name === allowedEnemies[Math.randint(0, allowedEnemies.length - 1)]) || ENEMY_DEFINITIONS[0];
+                let randomIndex = Math.randint(0, allowedEnemies.length - 1);
+                let enemyDef = ENEMY_DEFINITIONS.find(def => def.name === allowedEnemies[randomIndex]) || ENEMY_DEFINITIONS[0];
                 enemiesToSpawn.push(enemyDef);
             }
         } else {
             let enemyCount = Math.randint(stageConfig.minEnemies, stageConfig.maxEnemies);
             for (let i = 0; i < enemyCount; i++) {
                 let allowedEnemies = stageConfig.enemies;
-                let enemyDef = ENEMY_DEFINITIONS.find(def => def.name === allowedEnemies[Math.randint(0, allowedEnemies.length - 1)]) || ENEMY_DEFINITIONS[0];
+                let randomIndex = Math.randint(0, allowedEnemies.length - 1);
+                let enemyDef = ENEMY_DEFINITIONS.find(def => def.name === allowedEnemies[randomIndex]) || ENEMY_DEFINITIONS[0];
                 enemiesToSpawn.push(enemyDef);
             }
         }
@@ -1869,7 +1706,7 @@ phina.define('MainScene', {
             let validPosition = false;
             let attempts = 0;
 
-            while (!validPosition && attempts < 100) {
+            while (!validPosition && attempts < 1000) {
                 attempts++;
                 let padding = enemy.radius + 10;
                 let rx = Math.randint(LIMIT_LEFT + padding, LIMIT_RIGHT - padding);
@@ -1998,8 +1835,21 @@ phina.define('MainScene', {
             this.comboCount = 0;
             this.shotCount++;
             this.killsThisShot = 0;
-            let speed = Math.min(vec.length() * 0.2 * (this.player.stats.spd / 10), 50);
-            this.player.physical.velocity = vec.normalize().mul(speed);
+
+            let len = vec.length();
+            let dir = vec.normalize();
+            let speed = Math.min(len * 0.2 * (this.player.stats.spd / 10), 50);
+            let burstBoost = this.lastDragPowerRatio > 0.7 && this.gaugeValue > 0.95;
+
+            if (burstBoost) {
+                speed *= BURST_BOOST_SPEED_MULTIPLIER;
+                this.burstBoostActive = true;
+                this.burstGhostTimer = 0;
+                this.spawnPlayerBurstGhost(dir);
+            }
+
+            this.player.physical.velocity = dir.mul(speed);
+
             playSe('launch');
         } else {
             this.gameState = GAME_STATE.WAIT;
@@ -2066,7 +1916,21 @@ phina.define('MainScene', {
             this.handlePlayerBullets();
             this.handlePlayerAreaAttacks();
 
-            if (this.player.physical.velocity.length() > 0 && this.player.physical.velocity.length() < 0.5) {
+            if (this.burstBoostActive) {
+                let v = this.player.physical.velocity;
+                if (v.length() > 0.9) {
+                    this.burstGhostTimer += app.ticker.deltaTime;
+                    if (this.burstGhostTimer >= BURST_GHOST_SPAWN_INTERVAL) {
+                        let dir = Vector2(v.x, v.y).normalize();
+                        if (dir.length() > 0.0) this.spawnPlayerBurstGhost(dir);
+                        this.burstGhostTimer = 0;
+                    }
+                } else {
+                    this.burstBoostActive = false;
+                }
+            }
+
+            if (this.player.physical.velocity.length() > 0 && this.player.physical.velocity.length() < PLAYER_STOP_THRESHOLD) {
                 this.player.physical.velocity.set(0, 0);
                 this.triggerAreaAttack();
             }
@@ -2319,14 +2183,14 @@ phina.define('MainScene', {
                     let vx = (pattern === ATTACK_HORIZONTAL) ? speed : 0, vy = (pattern === ATTACK_VERTICAL) ? speed : 0;
                     EnemyBullet(enemy.x, enemy.y, vx, vy, enemy.stats.atk).addChildTo(this.enemyBulletGroup);
                     EnemyBullet(enemy.x, enemy.y, -vx, -vy, enemy.stats.atk).addChildTo(this.enemyBulletGroup);
-                } else if (pattern === ATTACK_LASER) {
+                } else if (pattern === ATTACK_LASER_90 || pattern === ATTACK_LASER_180) {
                     playSe('laser');
                     // ランダムな開始角度から扇状に複数本のレーザーで攻撃（同一波のダメージは1回のみ）
                     this.laserWaveId++;
                     let waveId = this.laserWaveId;
                     let baseAngle = Math.random() * Math.PI * 2;
-                    const spread = Math.PI; // 180°
-                    const numLasers = 18;
+                    const spread = pattern === ATTACK_LASER_180 ? Math.PI : Math.PI / 2;   // 180°:90°
+                    const numLasers = pattern === ATTACK_LASER_180 ? 18 : 10;
                     for (let i = 0; i < numLasers; i++) {
                         let angle = baseAngle + (spread * i / (numLasers - 1));
                         EnemyLaser(enemy.x, enemy.y, angle, enemy.stats.atk, waveId).addChildTo(this.enemyLaserGroup);
