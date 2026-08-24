@@ -461,7 +461,7 @@ phina.define('Player', {
         this.physical.friction = 0.96;
         this.hitEnemies = []; // 貫通時の「同一ショット中同一敵1回まで」判定用リスト（非貫通時は複数ヒット可）
         this.hiddenAtkMult = 1.0; // 隠し攻撃力倍率（特定名前で上昇。ステータス表示には出さない）
-        this.shieldCount = 0; // 現在のシールド残数（ステージ開始時に shieldLevel まで回復）
+        this.shieldCount = 0; // 現在のシールド残数
         this.resetPosition();
     },
     resetPosition: function () {
@@ -1001,7 +1001,7 @@ phina.define('TitleScene', {
             lineSpacing: 1.2
         }).addChildTo(this).setPosition(SCREEN_W / 2, SCREEN_H / 4);
         Label({
-            text: '1.3',
+            text: VERSION_STR,
             fill: '#fff',
             fontFamily: FONT_FAMILY,
             fontSize: 32,
@@ -1421,7 +1421,7 @@ phina.define('MainScene', {
             height: 90,
             fill: 'white',
             fontFamily: FONT_FAMILY,
-            fontSize: 26,
+            fontSize: 25,
             align: 'left',
             verticalAlign: 'top',
             lineSpace: 1.3
@@ -1741,9 +1741,6 @@ phina.define('MainScene', {
         this.shotCount = 0;
         this.killsThisShot = 0;
         this.initialEnemyCount = this.enemyGroup.children.length;
-
-        // シールド残数をスキルLvまで回復
-        this.player.shieldCount = this.player.stats.shieldLevel || 0;
 
         this.updateStatusUI();
     },
@@ -2362,9 +2359,8 @@ phina.define('MainScene', {
             { key: 'healOnKillLevel', label: 'キルゲイン +1', val: 1, fill: '#ad1457' } // マゼンタ
         ];
 
-        // 撃破回復は常に選択肢に入れる（上限なし）
-        // シールドは特定の名前の場合、もしくは50 % の確率で選択肢に入れる（上限なし）
-        if ((BONUS_NAMES.includes(this.playerName)) || (Math.random() < 0.5)) {
+        // シールドは特定の名前の場合、もしくは25 % の確率で選択肢に入れる（上限なし）
+        if ((BONUS_NAMES.includes(this.playerName)) || (Math.random() < 0.25)) {
             params.push({ key: 'shieldLevel', label: 'シールド +1', val: 1, fill: '#546e7a' }); // スレート灰
         }
 
@@ -2400,7 +2396,11 @@ phina.define('MainScene', {
                 fontColor: 'white'
             }).addChildTo(panel).setPosition(0, -80 + i * 80).onpointend = () => {
                 if (c.key === 'healAll') this.player.stats.hp = this.player.stats.maxHp;
-                else { this.player.stats[c.key] += c.val; if (c.key === 'maxHp') this.player.stats.hp += c.val; }
+                else {
+                    this.player.stats[c.key] += c.val;
+                    if (c.key === 'maxHp') this.player.stats.hp += c.val;
+                    if (c.key === 'shieldLevel') this.player.shieldCount = this.player.stats.shieldLevel;
+                }
                 this.stageNum++;
 
                 // 次のステージに遷移する直前に自動セーブ
@@ -2473,9 +2473,10 @@ phina.define('ResultScene', {
             }).addChildTo(this).alpha = 0.7;
         }
         if (score > 0) {
-            message += toZenkaku(score, 1) + "ガバス　を　かくとく！";
-            tweetStr += toZenkaku(score, 1) + "ガバスを獲得した！";
+            message += toZenkaku(score, 1) + "ガバス　を　かくとく！\n";
+            tweetStr += toZenkaku(score, 1) + "ガバスを獲得した！\n";
         }
+        tweetStr += `(v${VERSION_STR})`;
         postText = `勇者${playerName}は　${tweetStr}`;
 
         Label({
