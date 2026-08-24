@@ -1,4 +1,3 @@
-const VERSION_STR = '1.4';
 const SCREEN_W = 640;
 const SCREEN_H = 960;
 const SCREEN_CENTER_X = SCREEN_W / 2;   // スクリーン幅の半分

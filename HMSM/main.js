@@ -1,5 +1,7 @@
 phina.globalize();
 
+const VERSION_STR = '1.5';
+
 // セーブデータ関連
 const hasSaveData = function () {
     try {
@@ -107,6 +109,59 @@ const hitTestWithHitbox = function (a, b) {
     return Math.abs(a.x - b.x) < sa.hw + sb.hw && Math.abs(a.y - b.y) < sa.hh + sb.hh;
 };
 
+// ==========================================
+// 配置管理（実距離ベース方式）
+// 可動領域を64pxセルで管理し、実距離で衝突判定する
+// ==========================================
+const PLACEMENT_COLS = 8;  // x方向セル数（中心x: 96〜544）
+const PLACEMENT_ROWS = 12; // y方向セル数（中心y: 96〜800）
+
+// ボス配置アンカー（優先度順・可動領域に対する割合指定）
+const BOSS_ANCHORS = [
+    { fx: 0.50, fy: 0.10 }, // 上段中央
+    { fx: 0.22, fy: 0.10 }, // 上段左
+    { fx: 0.78, fy: 0.10 }, // 上段右
+    { fx: 0.50, fy: 0.32 }, // 中段中央
+    { fx: 0.18, fy: 0.34 }, // 中段左
+    { fx: 0.82, fy: 0.34 }, // 中段右
+    { fx: 0.35, fy: 0.48 }, // 下段左
+    { fx: 0.65, fy: 0.48 }, // 下段右
+];
+
+const createPlacementGrid = function () {
+    // 配置済みオブジェクトのリスト {x, y, radius, margin}
+    let placed = [];
+
+    return {
+        // 置けるか判定（可動領域からのはみ出し・配置済みとの実距離で判定）
+        canPlace: function (x, y, radius, margin) {
+            if (x - radius < LIMIT_LEFT || x + radius > LIMIT_RIGHT) return false;
+            if (y - radius < LIMIT_TOP || y + radius > LIMIT_BOTTOM) return false;
+            for (let i = 0; i < placed.length; i++) {
+                let p = placed[i];
+                // 自分と相手のマージンの大きい方を採用（安全側）
+                let m = Math.max(margin, p.margin);
+                if (Math.hypot(x - p.x, y - p.y) < radius + p.radius + m) return false;
+            }
+            return true;
+        },
+        // 配置登録
+        reserve: function (x, y, radius, margin) {
+            placed.push({ x: x, y: y, radius: radius, margin: margin });
+        },
+        // 指定行帯のセルをシャッフルして返す（配置候補の列挙用）
+        shuffledCells: function (rowMin, rowMax) {
+            let list = [];
+            for (let c = 0; c < PLACEMENT_COLS; c++) {
+                for (let r = rowMin; r <= rowMax; r++) {
+                    list.push({ col: c, row: r });
+                }
+            }
+            return shuffleArray(list);
+        }
+    };
+};
+
 phina.define("Explosion", {
     // Spriteを継承
     superClass: 'Sprite',
@@ -151,14 +206,14 @@ const STAGE_DEFINITIONS = [
         start: 1, end: 5,
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 0, maxExplosiveObs: 1,
+        minExplosiveObs: 1, maxExplosiveObs: 1,
         enemies: ['スライム０', 'ゴブリン０', 'アーチャー０', 'ウィザード０', 'ゴーレム０']
     },
     {
         start: 6, end: 9,
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 3,
-        minExplosiveObs: 0, maxExplosiveObs: 1,
+        minExplosiveObs: 1, maxExplosiveObs: 1,
         enemies: ['ゴブリン０', 'アーチャー０', 'ウィザード０', 'ゴーレム０', 'スライム１']
     },
     {
@@ -172,20 +227,20 @@ const STAGE_DEFINITIONS = [
         start: 11, end: 15,
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
-        minExplosiveObs: 0, maxExplosiveObs: 2,
+        minExplosiveObs: 1, maxExplosiveObs: 2,
         enemies: ['アーチャー０', 'ウィザード０', 'ゴーレム０', 'スライム１', 'ゴブリン１']
     },
     {
         start: 16, end: 19,
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 4,
-        minExplosiveObs: 0, maxExplosiveObs: 2,
+        minExplosiveObs: 1, maxExplosiveObs: 2,
         enemies: ['ウィザード０', 'ゴーレム０', 'スライム１', 'ゴブリン１', 'アーチャー１']
     },
     {
         start: 20, end: 20,
         minEnemies: 2, maxEnemies: 2,
-        minNormalObs: 1, maxNormalObs: 2,
+        minNormalObs: 1, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
         enemies: ['ゴーレム０', 'ゴブリン１', 'アーチャー１']
     },
@@ -207,9 +262,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 30, end: 30,
         minEnemies: 3, maxEnemies: 3,
-        minNormalObs: 1, maxNormalObs: 2,
+        minNormalObs: 1, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: [, 'ゴブリン１', 'アーチャー１', 'ゴーレム１']
+        enemies: ['ゴブリン１', 'アーチャー１', 'ゴーレム１']
     },
     {
         start: 31, end: 35,
@@ -228,7 +283,7 @@ const STAGE_DEFINITIONS = [
     {
         start: 40, end: 40,
         minEnemies: 3, maxEnemies: 3,
-        minNormalObs: 1, maxNormalObs: 2,
+        minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
         enemies: ['アーチャー１', 'ゴーレム１', 'ゴブリン２']
     },
@@ -249,8 +304,8 @@ const STAGE_DEFINITIONS = [
     {
         start: 50, end: 50,
         minEnemies: 3, maxEnemies: 3,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
+        minNormalObs: 2, maxNormalObs: 3,
+        minExplosiveObs: 1, maxExplosiveObs: 3,
         enemies: ['ゴーレム１', 'ゴブリン２', 'アーチャー２']
     },
 
@@ -271,8 +326,8 @@ const STAGE_DEFINITIONS = [
     {
         start: 60, end: 60,
         minEnemies: 2, maxEnemies: 2,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
+        minNormalObs: 2, maxNormalObs: 3,
+        minExplosiveObs: 1, maxExplosiveObs: 3,
         enemies: ['ゴブリン２', 'アーチャー２', 'ゴーレム２']
     },
     {
@@ -314,8 +369,8 @@ const STAGE_DEFINITIONS = [
     {
         start: 80, end: 80,
         minEnemies: 1, maxEnemies: 2,
-        minNormalObs: 0, maxNormalObs: 1,
-        minExplosiveObs: 0, maxExplosiveObs: 2,
+        minNormalObs: 1, maxNormalObs: 2,
+        minExplosiveObs: 2, maxExplosiveObs: 3,
         enemies: ['ゴブリン３', 'アーチャー３', 'ゴーレム３']
     },
     {
@@ -335,8 +390,8 @@ const STAGE_DEFINITIONS = [
     {
         start: 90, end: 90,
         minEnemies: 1, maxEnemies: 2,
-        minNormalObs: 0, maxNormalObs: 1,
-        minExplosiveObs: 0, maxExplosiveObs: 2,
+        minNormalObs: 1, maxNormalObs: 2,
+        minExplosiveObs: 2, maxExplosiveObs: 3,
         enemies: ['アーチャー３', 'ゴーレム３', 'ゴブリン４']
     },
     {
@@ -357,8 +412,8 @@ const STAGE_DEFINITIONS = [
     {
         start: 100, end: 100,
         minEnemies: 2, maxEnemies: 3,
-        minNormalObs: 0, maxNormalObs: 1,
-        minExplosiveObs: 0, maxExplosiveObs: 2,
+        minNormalObs: 1, maxNormalObs: 2,
+        minExplosiveObs: 2, maxExplosiveObs: 3,
         enemies: ['ゴブリン４', 'アーチャー４', 'ゴーレム４']
     },
 ];
@@ -1517,6 +1572,30 @@ phina.define('MainScene', {
         return 4;
     },
 
+    // セル帯の中から空き位置を探して配置する。配置できたら true
+    placeInZone: function (obj, grid, rowMin, rowMax, margin, jitter) {
+        let cells = grid.shuffledCells(rowMin, rowMax);
+        for (let i = 0; i < cells.length; i++) {
+            let cx = LIMIT_LEFT + cells[i].col * TILE_SIZE + TILE_SIZE / 2;
+            let cy = LIMIT_TOP + cells[i].row * TILE_SIZE + TILE_SIZE / 2;
+            // グリッド感を消すためのランダムジッター
+            let jx = jitter ? Math.randint(-jitter, jitter) : 0;
+            let jy = jitter ? Math.randint(-jitter, jitter) : 0;
+            if (grid.canPlace(cx + jx, cy + jy, obj.radius, margin)) {
+                grid.reserve(cx + jx, cy + jy, obj.radius, margin);
+                obj.setPosition(cx + jx, cy + jy);
+                return true;
+            }
+            // ジッターでダメならセル中心でも試す
+            if (grid.canPlace(cx, cy, obj.radius, margin)) {
+                grid.reserve(cx, cy, obj.radius, margin);
+                obj.setPosition(cx, cy);
+                return true;
+            }
+        }
+        return false;
+    },
+
     setupStage: function () {
         this.bgGroup.children.clear();
         this.enemyGroup.children.clear();
@@ -1591,64 +1670,7 @@ phina.define('MainScene', {
 
         let stageConfig = this.getStageConfig(this.stageNum);
 
-        let gridCells = [];
-        for (let col = 0; col < 8; col++) {
-            for (let row = 3; row <= 7; row++) {
-                gridCells.push({ col: col, row: row });
-            }
-        }
-        shuffleArray(gridCells);
-
-        // 特定の名前の場合はHP回復アイテム出現率を倍にする（通常10% → 20%）
-        let healSpawnRate = BONUS_NAMES.includes(this.playerName) ? 0.20 : 0.10;
-
-        if (Math.random() < healSpawnRate) {
-            let itemLevel = this.getRandomHealItemLevel();
-            let attempts = 0;
-            let placed = false;
-            while (!placed && gridCells.length > 0 && attempts < 50) {
-                attempts++;
-                let cell = gridCells.pop();
-                let hx = LIMIT_LEFT + cell.col * TILE_SIZE + TILE_SIZE / 2;
-                let hy = LIMIT_TOP + cell.row * TILE_SIZE + TILE_SIZE / 2;
-
-                if (Math.abs(hx - this.player.x) < 120 && Math.abs(hy - this.player.y) < 120) {
-                    continue;
-                }
-
-                HealItem(itemLevel).addChildTo(this.healItemGroup).setPosition(hx, hy);
-                placed = true;
-            }
-        }
-
-        let normalCount = isBossStage ? Math.randint(1, 2) : Math.randint(stageConfig.minNormalObs, stageConfig.maxNormalObs);
-        let explosiveCount = isBossStage ? Math.randint(0, 1) : Math.randint(stageConfig.minExplosiveObs, stageConfig.maxExplosiveObs);
-
-        let spawnObstacleType = (type, count) => {
-            let spawned = 0;
-            let attempts = 0;
-            while (spawned < count && gridCells.length > 0 && attempts < 50) {
-                attempts++;
-                let cell = gridCells.pop();
-                let ox = LIMIT_LEFT + cell.col * TILE_SIZE + TILE_SIZE / 2;
-                let oy = LIMIT_TOP + cell.row * TILE_SIZE + TILE_SIZE / 2;
-
-                if (Math.abs(ox - this.player.x) < 120 && Math.abs(oy - this.player.y) < 120) {
-                    continue;
-                }
-
-                if (type === 'explosive') {
-                    ExplosiveObstacle(this.stageNum).addChildTo(this.obstacleGroup).setPosition(ox, oy);
-                } else {
-                    Obstacle(this.stageNum).addChildTo(this.obstacleGroup).setPosition(ox, oy);
-                }
-                spawned++;
-            }
-        };
-
-        spawnObstacleType('normal', normalCount);
-        spawnObstacleType('explosive', explosiveCount);
-
+        // ---- 出現させる敵リストを組み立てる（配置前に確定）----
         let enemiesToSpawn = [];
         if (isBossStage) {
             // メインボス（このステージのボス）
@@ -1701,41 +1723,73 @@ phina.define('MainScene', {
             }
         }
 
-        enemiesToSpawn.forEach(enemyDef => {
-            let enemy = Enemy(enemyDef, this.stageNum);
-            let validPosition = false;
-            let attempts = 0;
+        // ---- 配置管理グリッド ----
+        let grid = createPlacementGrid();
+        // プレイヤー初期位置の周辺は安全圏として先に予約
+        grid.reserve(this.player.x, this.player.y, this.player.radius, 90);
 
-            while (!validPosition && attempts < 1000) {
-                attempts++;
-                let padding = enemy.radius + 10;
-                let rx = Math.randint(LIMIT_LEFT + padding, LIMIT_RIGHT - padding);
-                // ボスは大きめなので配置可能なY範囲を少し広げる
-                let yMax = enemy.isBoss ? (LIMIT_TOP + 300) : (LIMIT_TOP + 220);
-                let ry = Math.randint(LIMIT_TOP + padding, Math.min(yMax, LIMIT_BOTTOM - padding - 80));
-                enemy.setPosition(rx, ry);
+        // ---- 1. ボス（大きい順にアンカーへ配置）----
+        let bosses = enemiesToSpawn.filter(d => d.isBoss)
+            .map(d => Enemy(d, this.stageNum))
+            .sort((a, b) => b.radius - a.radius);
+        let normalDefs = enemiesToSpawn.filter(d => !d.isBoss);
 
-                validPosition = true;
-
-                if (Vector2.distance(enemy, this.player) < (enemy.radius + this.player.radius + 40)) {
-                    validPosition = false;
-                    continue;
-                }
-
-                let hitEnemy = this.enemyGroup.children.some(other => Vector2.distance(enemy, other) < (enemy.radius + other.radius + 20));
-                if (hitEnemy) {
-                    validPosition = false;
-                    continue;
-                }
-
-                let hitObstacle = this.obstacleGroup.children.some(obs => Vector2.distance(enemy, obs) < (enemy.radius + obs.radius + 20));
-                if (hitObstacle) {
-                    validPosition = false;
-                    continue;
+        bosses.forEach(boss => {
+            let placed = false;
+            for (let i = 0; i < BOSS_ANCHORS.length && !placed; i++) {
+                let a = BOSS_ANCHORS[i];
+                let x = LIMIT_LEFT + a.fx * (LIMIT_RIGHT - LIMIT_LEFT);
+                let y = LIMIT_TOP + a.fy * (LIMIT_BOTTOM - LIMIT_TOP);
+                // 体が可動領域に収まるようクランプ（ボスは上寄せ）
+                x = Math.clamp(x, LIMIT_LEFT + boss.radius, LIMIT_RIGHT - boss.radius);
+                y = Math.clamp(y, LIMIT_TOP + boss.radius + 8, LIMIT_TOP + 380);
+                if (grid.canPlace(x, y, boss.radius, 8)) {
+                    grid.reserve(x, y, boss.radius, 8);
+                    boss.setPosition(x, y);
+                    placed = true;
                 }
             }
-            enemy.addChildTo(this.enemyGroup);
+            // アンカーで置けない場合は帯スキャン（マージンを段階的に緩和）
+            if (!placed) placed = this.placeInZone(boss, grid, 0, 5, 8, 0);
+            if (!placed) placed = this.placeInZone(boss, grid, 0, 7, 4, 0);
+            if (!placed) placed = this.placeInZone(boss, grid, 0, 9, 0, 0);
+            if (placed) boss.addChildTo(this.enemyGroup);
         });
+
+        // ---- 2. 通常敵（大きい順に敵帯へ配置）----
+        normalDefs.map(d => Enemy(d, this.stageNum))
+            .sort((a, b) => b.radius - a.radius)
+            .forEach(enemy => {
+                let placed = this.placeInZone(enemy, grid, 1, 7, 12, 12);
+                if (!placed) placed = this.placeInZone(enemy, grid, 0, 8, 8, 8);
+                if (!placed) placed = this.placeInZone(enemy, grid, 0, 9, 0, 0);
+                if (placed) enemy.addChildTo(this.enemyGroup);
+            });
+
+        // ---- 3. 障害物（中盤の反射ルート帯へ配置）----
+        let normalObsCount = Math.randint(stageConfig.minNormalObs, stageConfig.maxNormalObs);
+        let explosiveObsCount = Math.randint(stageConfig.minExplosiveObs, stageConfig.maxExplosiveObs);
+
+        let spawnObstacleType = (type, count) => {
+            for (let i = 0; i < count; i++) {
+                let obs = (type === 'explosive') ? ExplosiveObstacle(this.stageNum) : Obstacle(this.stageNum);
+                let placed = this.placeInZone(obs, grid, 4, 8, 0, 0);
+                if (!placed) placed = this.placeInZone(obs, grid, 2, 9, 0, 0);
+                if (placed) obs.addChildTo(this.obstacleGroup);
+            }
+        };
+        spawnObstacleType('normal', normalObsCount);
+        spawnObstacleType('explosive', explosiveObsCount);
+
+        // ---- 4. 回復アイテム（残った隙間へ）----
+        // 特定の名前の場合はHP回復アイテム出現率を倍にする（通常10% → 20%）
+        let healSpawnRate = BONUS_NAMES.includes(this.playerName) ? 0.20 : 0.10;
+        if (Math.random() < healSpawnRate) {
+            let item = HealItem(this.getRandomHealItemLevel());
+            let placed = this.placeInZone(item, grid, 3, 8, 4, 0);
+            if (!placed) placed = this.placeInZone(item, grid, 1, 9, 0, 0);
+            if (placed) item.addChildTo(this.healItemGroup);
+        }
 
         // スコア用：攻撃回数・多体撃破のカウンタをリセットし、初期敵数を記録
         this.shotCount = 0;
@@ -2561,8 +2615,7 @@ phina.main(() => {
         for (let col = -1; col < 3; col++) {
             let x = col * 32 + xOff;
             gCtx.fillStyle = '#6a6a6a'; gCtx.fillRect(x + 1, y + 1, 30, 14);
-            gCtx.fillStyle = '#9a9a9a'; gCtx.fillRect(x + 1, y + 1, 30, 2);
-            gCtx.fillStyle = '#9a9a9a'; gCtx.fillRect(x + 1, y + 1, 2, 14);
+            gCtx.fillStyle = '#9a9a9a'; gCtx.fillRect(x + 1, y + 1, 30, 2); gCtx.fillRect(x + 1, y + 1, 2, 14);
         }
     }
     phina.asset.AssetManager.set('image', 'gray_brick', grayCanvas);
