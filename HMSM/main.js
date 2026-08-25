@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.5';
+const VERSION_STR = '1.6';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -284,7 +284,7 @@ const STAGE_DEFINITIONS = [
         start: 40, end: 40,
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
+        minExplosiveObs: 1, maxExplosiveObs: 3,
         enemies: ['アーチャー１', 'ゴーレム１', 'ゴブリン２']
     },
     {
@@ -306,7 +306,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 3,
-        enemies: ['ゴーレム１', 'ゴブリン２', 'アーチャー２']
+        enemies: ['ゴーレム１', 'ゴブリン２', 'アーチャー２', 'ウィザード２']
     },
 
     {
@@ -326,9 +326,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 60, end: 60,
         minEnemies: 2, maxEnemies: 2,
-        minNormalObs: 2, maxNormalObs: 3,
-        minExplosiveObs: 1, maxExplosiveObs: 3,
-        enemies: ['ゴブリン２', 'アーチャー２', 'ゴーレム２']
+        minNormalObs: 2, maxNormalObs: 4,
+        minExplosiveObs: 2, maxExplosiveObs: 3,
+        enemies: ['ゴブリン２', 'アーチャー２', 'ウィザード２', 'ゴーレム２']
     },
     {
         start: 61, end: 65,
@@ -347,9 +347,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 70, end: 70,
         minEnemies: 1, maxEnemies: 2,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 1, maxExplosiveObs: 2,
-        enemies: ['ゴーレム２', 'ゴブリン３', 'アーチャー３']
+        minNormalObs: 2, maxNormalObs: 3,
+        minExplosiveObs: 2, maxExplosiveObs: 3,
+        enemies: ['ウィザード２', 'ゴーレム２', 'ゴブリン３', 'アーチャー３']
     },
     {
         start: 71, end: 75,
@@ -369,9 +369,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 80, end: 80,
         minEnemies: 1, maxEnemies: 2,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 2, maxExplosiveObs: 3,
-        enemies: ['ゴブリン３', 'アーチャー３', 'ゴーレム３']
+        minNormalObs: 2, maxNormalObs: 4,
+        minExplosiveObs: 2, maxExplosiveObs: 4,
+        enemies: ['ゴブリン３', 'アーチャー３', 'ウィザード３', 'ゴーレム３']
     },
     {
         start: 81, end: 85,
@@ -390,9 +390,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 90, end: 90,
         minEnemies: 1, maxEnemies: 2,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 2, maxExplosiveObs: 3,
-        enemies: ['アーチャー３', 'ゴーレム３', 'ゴブリン４']
+        minNormalObs: 2, maxNormalObs: 4,
+        minExplosiveObs: 2, maxExplosiveObs: 4,
+        enemies: ['アーチャー３', 'ウィザード３', 'ゴーレム３', 'ゴブリン４']
     },
     {
         start: 91, end: 95,
@@ -412,9 +412,9 @@ const STAGE_DEFINITIONS = [
     {
         start: 100, end: 100,
         minEnemies: 2, maxEnemies: 3,
-        minNormalObs: 1, maxNormalObs: 2,
-        minExplosiveObs: 2, maxExplosiveObs: 3,
-        enemies: ['ゴブリン４', 'アーチャー４', 'ゴーレム４']
+        minNormalObs: 2, maxNormalObs: 4,
+        minExplosiveObs: 2, maxExplosiveObs: 4,
+        enemies: ['ゴブリン４', 'アーチャー４', 'ウィザード４', 'ゴーレム４']
     },
 ];
 
@@ -437,6 +437,7 @@ const MOVE_STATIONARY = 0; // 静止
 const MOVE_VERTICAL = 1; // 上下移動
 const MOVE_HORIZONTAL = 2; // 左右移動
 const MOVE_DIAGONAL = 3; // 斜め移動
+const MOVE_ZIGZAG = 4; // ジグザグ移動（右→一段下→左→一段下→右…を繰り返し、下端に達したら上方向で同じ動きを繰り返す）
 
 // ランク0〜4で基本ステータスに差をつける
 // 種別の役割:
@@ -466,21 +467,21 @@ const ENEMY_DEFINITIONS = [
     { name: 'スライム２', image: 'enemy_ptn_2', hp: 40, atk: 15, def: 4, freq: 2, attackPattern: ATTACK_AIMED, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 100 },
     { name: 'ゴブリン２', image: 'enemy_etc_2', hp: 65, atk: 22, def: 7, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 0.9, baseScore: 120 },
     { name: 'アーチャー２', image: 'enemy_ll_2', hp: 55, atk: 27, def: 5, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 0.8, baseScore: 130 },
-    { name: 'ウィザード２', image: 'enemy_blk_2', hp: 70, atk: 34, def: 8, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 0.8, baseScore: 140 },
+    { name: 'ウィザード２', image: 'enemy_blk_2', hp: 70, atk: 34, def: 8, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_ZIGZAG, hitboxScale: 0.8, baseScore: 140 },
     { name: 'ゴーレム２', image: 'enemy_spn_2', hp: 100, atk: 26, def: 16, freq: 2, attackPattern: ATTACK_LASER_90, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 160 },
 
     // ----- ランク3 -----
     { name: 'スライム３', image: 'enemy_ptn_3', hp: 58, atk: 20, def: 6, freq: 2, attackPattern: ATTACK_LASER_90, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 110 },
     { name: 'ゴブリン３', image: 'enemy_etc_3', hp: 90, atk: 30, def: 10, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 1.0, baseScore: 130 },
     { name: 'アーチャー３', image: 'enemy_ll_3', hp: 75, atk: 36, def: 7, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 1.0, baseScore: 140 },
-    { name: 'ウィザード３', image: 'enemy_blk_3', hp: 95, atk: 44, def: 11, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 1.0, baseScore: 150 },
+    { name: 'ウィザード３', image: 'enemy_blk_3', hp: 95, atk: 44, def: 11, freq: 3, attackPattern: ATTACK_AREA, movePattern: MOVE_ZIGZAG, hitboxScale: 1.0, baseScore: 150 },
     { name: 'ゴーレム３', image: 'enemy_spn_3', hp: 140, atk: 34, def: 22, freq: 2, attackPattern: ATTACK_8WAY, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 170 },
 
     // ----- ランク4（終盤） -----
     { name: 'スライム４', image: 'enemy_ptn_4', hp: 80, atk: 28, def: 8, freq: 2, attackPattern: ATTACK_LASER_180, movePattern: MOVE_STATIONARY, hitboxScale: 0.9, baseScore: 120 },
     { name: 'ゴブリン４', image: 'enemy_etc_4', hp: 125, atk: 40, def: 14, freq: 2, attackPattern: ATTACK_DIAGONAL_4WAY, movePattern: MOVE_HORIZONTAL, hitboxScale: 1.0, baseScore: 140 },
     { name: 'アーチャー４', image: 'enemy_ll_4', hp: 100, atk: 48, def: 10, freq: 2, attackPattern: ATTACK_4WAY, movePattern: MOVE_VERTICAL, hitboxScale: 1.0, baseScore: 150 },
-    { name: 'ウィザード４', image: 'enemy_blk_4', hp: 130, atk: 58, def: 15, freq: 2, attackPattern: ATTACK_AREA, movePattern: MOVE_STATIONARY, hitboxScale: 0.9, baseScore: 160 },
+    { name: 'ウィザード４', image: 'enemy_blk_4', hp: 130, atk: 58, def: 15, freq: 2, attackPattern: ATTACK_AREA, movePattern: MOVE_ZIGZAG, hitboxScale: 0.9, baseScore: 160 },
     { name: 'ゴーレム４', image: 'enemy_spn_4', hp: 190, atk: 44, def: 30, freq: 2, attackPattern: ATTACK_8WAY, movePattern: MOVE_DIAGONAL, hitboxScale: 0.9, baseScore: 180 }
 ];
 
@@ -834,6 +835,15 @@ phina.define('Enemy', {
             let len = Math.hypot(this.vx, this.vy);
             this.vx = (this.vx / len) * speed;
             this.vy = (this.vy / len) * speed;
+        } else if (this.movePattern === MOVE_ZIGZAG) {
+            // ジグザグ移動の初期状態：最初は右へ移動するところからスタート
+            this.zigzagSpeed = speed;
+            this.zigzagHDir = 1;         // 横方向: 1=右 / -1=左
+            this.zigzagVDir = 1;         // 縦方向: 1=下段へ / -1=上段へ（下端到達後に反転）
+            this.zigzagPhase = 'horizontal'; // 'horizontal'=左右移動中 / 'vertical'=一段移動中
+            this.zigzagStepRemain = 0;   // 一段移動の残り距離
+            this.vx = speed;
+            this.vy = 0;
         } else {
             this.vx = 0;
             this.vy = 0;
@@ -912,6 +922,8 @@ phina.define('Enemy', {
             reflectInBounds(this, vel);
             this.vx = vel.x;
             this.vy = vel.y;
+        } else if (this.movePattern === MOVE_ZIGZAG) {
+            this.updateZigzag();
         }
 
         // 障害物との衝突で反射（斜め移動にも対応：相対位置から主軸を判定して反転）
@@ -922,9 +934,16 @@ phina.define('Enemy', {
                 if (Math.abs(dx) > Math.abs(dy)) {
                     this.vx *= -1;
                     this.x += this.vx * 3;
+                    // ジグザグ移動中は横方向の状態も合わせて反転させ、ズレを防ぐ
+                    if (this.movePattern === MOVE_ZIGZAG && this.zigzagPhase === 'horizontal') {
+                        this.zigzagHDir *= -1;
+                    }
                 } else {
                     this.vy *= -1;
                     this.y += this.vy * 3;
+                    if (this.movePattern === MOVE_ZIGZAG && this.zigzagPhase === 'vertical') {
+                        this.zigzagVDir *= -1;
+                    }
                 }
             }
         });
@@ -945,15 +964,21 @@ phina.define('Enemy', {
                 scene.updateStatusUI();
 
                 // 移動型の敵はプレイヤーとの接触で反射（斜め移動対応）
-                if (this.movePattern === MOVE_VERTICAL || this.movePattern === MOVE_HORIZONTAL || this.movePattern === MOVE_DIAGONAL) {
+                if (this.movePattern === MOVE_VERTICAL || this.movePattern === MOVE_HORIZONTAL || this.movePattern === MOVE_DIAGONAL || this.movePattern === MOVE_ZIGZAG) {
                     let dx = this.x - p.x;
                     let dy = this.y - p.y;
                     if (Math.abs(dx) > Math.abs(dy)) {
                         this.vx *= -1;
                         this.x += this.vx * 3;
+                        if (this.movePattern === MOVE_ZIGZAG && this.zigzagPhase === 'horizontal') {
+                            this.zigzagHDir *= -1;
+                        }
                     } else {
                         this.vy *= -1;
                         this.y += this.vy * 3;
+                        if (this.movePattern === MOVE_ZIGZAG && this.zigzagPhase === 'vertical') {
+                            this.zigzagVDir *= -1;
+                        }
                     }
                 }
 
@@ -969,6 +994,56 @@ phina.define('Enemy', {
                 if (p.stats.hp <= 0) scene.checkGameOver();
             }
         }
+    },
+    // ジグザグ移動（MOVE_ZIGZAG）専用の更新処理
+    // 右へ移動→右端で一段下へ→左へ移動→左端で一段下へ→右へ…を繰り返し、
+    // 下端まで来たら縦方向を反転し、同じ左右ジグザグを上方向へ辿りながら繰り返す
+    updateZigzag: function () {
+        if (this.zigzagPhase === 'horizontal') {
+            this.x += this.vx;
+
+            if (this.zigzagHDir > 0 && this.right >= LIMIT_RIGHT) {
+                // 右へ移動できなくなった → 一段下（または上）へ移動するフェーズへ
+                this.right = LIMIT_RIGHT;
+                this.startZigzagStep();
+            } else if (this.zigzagHDir < 0 && this.left <= LIMIT_LEFT) {
+                // 左へ移動できなくなった → 一段下（または上）へ移動するフェーズへ
+                this.left = LIMIT_LEFT;
+                this.startZigzagStep();
+            }
+        } else {
+            // 一段分の縦移動中（this.vyを実際の移動方向に同期しておく。
+            // これにより障害物・プレイヤー接触時の押し出し処理（this.vy*3）が正しく機能する）
+            this.vy = this.zigzagSpeed * this.zigzagVDir;
+            let step = Math.min(this.zigzagSpeed, this.zigzagStepRemain);
+            this.y += step * this.zigzagVDir;
+            this.zigzagStepRemain -= step;
+
+            // 下端 / 上端に到達したら縦方向を反転（下へ移動できなくなったら上へ、その逆も同様）
+            if (this.zigzagVDir > 0 && this.bottom >= LIMIT_BOTTOM) {
+                this.bottom = LIMIT_BOTTOM;
+                this.zigzagVDir = -1;
+                this.zigzagStepRemain = 0;
+            } else if (this.zigzagVDir < 0 && this.top <= LIMIT_TOP) {
+                this.top = LIMIT_TOP;
+                this.zigzagVDir = 1;
+                this.zigzagStepRemain = 0;
+            }
+
+            if (this.zigzagStepRemain <= 0) {
+                // 一段移動完了 → 横方向を反転して左右移動フェーズへ戻る
+                this.zigzagHDir *= -1;
+                this.vx = this.zigzagSpeed * this.zigzagHDir;
+                this.vy = 0;
+                this.zigzagPhase = 'horizontal';
+            }
+        }
+    },
+    // 左右移動フェーズ→一段移動フェーズへの切り替え
+    startZigzagStep: function () {
+        this.zigzagPhase = 'vertical';
+        this.zigzagStepRemain = TILE_SIZE; // 一段 = TILE_SIZE分だけ縦移動
+        this.vx = 0;
     }
 });
 
