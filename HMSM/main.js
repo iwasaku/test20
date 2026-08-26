@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.6';
+const VERSION_STR = '1.8';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -207,6 +207,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 1,
+        minIndestructibleObs: 0, maxIndestructibleObs: 1,
         enemies: ['スライム０', 'ゴブリン０', 'アーチャー０', 'ウィザード０', 'ゴーレム０']
     },
     {
@@ -214,6 +215,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 1,
+        minIndestructibleObs: 0, maxIndestructibleObs: 1,
         enemies: ['ゴブリン０', 'アーチャー０', 'ウィザード０', 'ゴーレム０', 'スライム１']
     },
     {
@@ -221,6 +223,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 2,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 0, maxIndestructibleObs: 1,
         enemies: ['ゴブリン０', 'アーチャー０', 'ゴーレム０']
     },
     {
@@ -228,6 +231,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 0, maxIndestructibleObs: 1,
         enemies: ['アーチャー０', 'ウィザード０', 'ゴーレム０', 'スライム１', 'ゴブリン１']
     },
     {
@@ -235,6 +239,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 1, maxIndestructibleObs: 1,
         enemies: ['ウィザード０', 'ゴーレム０', 'スライム１', 'ゴブリン１', 'アーチャー１']
     },
     {
@@ -242,6 +247,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 2,
         minNormalObs: 1, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 0, maxIndestructibleObs: 1,
         enemies: ['ゴーレム０', 'ゴブリン１', 'アーチャー１']
     },
     {
@@ -249,6 +255,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ゴーレム０', 'スライム１', 'ゴブリン１', 'アーチャー１', 'ウィザード１']
     },
 
@@ -257,6 +264,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['スライム１', 'ゴブリン１', 'アーチャー１', 'ウィザード１', 'ゴーレム１']
     },
     {
@@ -264,6 +272,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 1, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 2,
+        minIndestructibleObs: 1, maxIndestructibleObs: 1,
         enemies: ['ゴブリン１', 'アーチャー１', 'ゴーレム１']
     },
     {
@@ -271,6 +280,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 2, maxNormalObs: 5,
         minExplosiveObs: 1, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ゴブリン１', 'アーチャー１', 'ウィザード１', 'ゴーレム１', 'スライム２']
     },
     {
@@ -278,6 +288,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 2, maxNormalObs: 5,
         minExplosiveObs: 1, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['アーチャー１', 'ウィザード１', 'ゴーレム１', 'スライム２', 'ゴブリン２']
     },
     {
@@ -285,6 +296,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 1,
         enemies: ['アーチャー１', 'ゴーレム１', 'ゴブリン２']
     },
     {
@@ -292,6 +304,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 3, maxNormalObs: 5,
         minExplosiveObs: 1, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ウィザード１', 'ゴーレム１', 'スライム２', 'ゴブリン２', 'アーチャー２']
     },
     {
@@ -299,6 +312,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 3, maxNormalObs: 5,
         minExplosiveObs: 2, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 3,
         enemies: ['ゴーレム１', 'スライム２', 'ゴブリン２', 'アーチャー２', 'ウィザード２']
     },
     {
@@ -306,6 +320,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 1, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ゴーレム１', 'ゴブリン２', 'アーチャー２', 'ウィザード２']
     },
 
@@ -314,6 +329,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 3, maxNormalObs: 5,
         minExplosiveObs: 2, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 3,
         enemies: ['スライム２', 'ゴブリン２', 'アーチャー２', 'ウィザード２', 'ゴーレム２']
     },
     {
@@ -321,6 +337,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 3, maxEnemies: 4,
         minNormalObs: 3, maxNormalObs: 5,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['ゴブリン２', 'アーチャー２', 'ウィザード２', 'ゴーレム２', 'スライム３']
     },
     {
@@ -328,6 +345,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 2,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 2, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ゴブリン２', 'アーチャー２', 'ウィザード２', 'ゴーレム２']
     },
     {
@@ -335,6 +353,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 3, maxNormalObs: 6,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['アーチャー２', 'ウィザード２', 'ゴーレム２', 'スライム３', 'ゴブリン３']
     },
     {
@@ -342,6 +361,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 3, maxNormalObs: 6,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['ウィザード２', 'ゴーレム２', 'スライム３', 'ゴブリン３', 'アーチャー３']
     },
     {
@@ -349,6 +369,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 1, maxEnemies: 2,
         minNormalObs: 2, maxNormalObs: 3,
         minExplosiveObs: 2, maxExplosiveObs: 3,
+        minIndestructibleObs: 1, maxIndestructibleObs: 2,
         enemies: ['ウィザード２', 'ゴーレム２', 'ゴブリン３', 'アーチャー３']
     },
     {
@@ -356,6 +377,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 3, maxNormalObs: 6,
         minExplosiveObs: 3, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['ゴーレム２', 'スライム３', 'ゴブリン３', 'アーチャー３', 'ウィザード３']
     },
 
@@ -364,6 +386,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 4, maxNormalObs: 6,
         minExplosiveObs: 3, maxExplosiveObs: 5,
+        minIndestructibleObs: 2, maxIndestructibleObs: 4,
         enemies: ['スライム３', 'ゴブリン３', 'アーチャー３', 'ウィザード３', 'ゴーレム３']
     },
     {
@@ -371,6 +394,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 1, maxEnemies: 2,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['ゴブリン３', 'アーチャー３', 'ウィザード３', 'ゴーレム３']
     },
     {
@@ -378,6 +402,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 3, maxNormalObs: 6,
         minExplosiveObs: 3, maxExplosiveObs: 5,
+        minIndestructibleObs: 2, maxIndestructibleObs: 4,
         enemies: ['ゴブリン３', 'アーチャー３', 'ウィザード３', 'ゴーレム３', 'スライム４']
     },
     {
@@ -385,6 +410,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 5,
         minNormalObs: 4, maxNormalObs: 6,
         minExplosiveObs: 3, maxExplosiveObs: 5,
+        minIndestructibleObs: 2, maxIndestructibleObs: 4,
         enemies: ['アーチャー３', 'ウィザード３', 'ゴーレム３', 'スライム４', 'ゴブリン４']
     },
     {
@@ -392,6 +418,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 1, maxEnemies: 2,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 3,
         enemies: ['アーチャー３', 'ウィザード３', 'ゴーレム３', 'ゴブリン４']
     },
     {
@@ -399,6 +426,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 6,
         minNormalObs: 4, maxNormalObs: 6,
         minExplosiveObs: 3, maxExplosiveObs: 5,
+        minIndestructibleObs: 2, maxIndestructibleObs: 4,
         enemies: ['ウィザード３', 'ゴーレム３', 'スライム４', 'ゴブリン４', 'アーチャー４']
     },
     {
@@ -406,6 +434,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 4, maxEnemies: 6,
         minNormalObs: 4, maxNormalObs: 6,
         minExplosiveObs: 4, maxExplosiveObs: 5,
+        minIndestructibleObs: 3, maxIndestructibleObs: 4,
         enemies: ['ゴーレム３', 'スライム４', 'ゴブリン４', 'アーチャー４', 'ウィザード４']
     },
 
@@ -414,6 +443,7 @@ const STAGE_DEFINITIONS = [
         minEnemies: 2, maxEnemies: 3,
         minNormalObs: 2, maxNormalObs: 4,
         minExplosiveObs: 2, maxExplosiveObs: 4,
+        minIndestructibleObs: 2, maxIndestructibleObs: 4,
         enemies: ['ゴブリン４', 'アーチャー４', 'ウィザード４', 'ゴーレム４']
     },
 ];
@@ -518,6 +548,7 @@ phina.define('Player', {
         this.hitEnemies = []; // 貫通時の「同一ショット中同一敵1回まで」判定用リスト（非貫通時は複数ヒット可）
         this.hiddenAtkMult = 1.0; // 隠し攻撃力倍率（特定名前で上昇。ステータス表示には出さない）
         this.shieldCount = 0; // 現在のシールド残数
+        this.shieldCooldown = 0; // 次のシールド自動回復までの残りステージ数（0=カウント停止中）
         this.resetPosition();
     },
     resetPosition: function () {
@@ -606,6 +637,23 @@ phina.define('HealItem', {
 });
 
 // ==========================================
+// シールド回復アイテムクラス（フィールドドロップ方式）
+// 拾うとシールドを1個回復する（上限はshieldLevelまで）
+// ==========================================
+phina.define('ShieldItem', {
+    superClass: 'Sprite',
+    init: function () {
+        this.superInit('heal_item_sheet', 64, 64);
+        this.setSize(52, 52);
+        this.radius = 26;
+
+        this.setFrameIndex(4, 64, 64);
+
+        this.tweener.moveBy(0, -6, 600, 'easeInOutQuad').moveBy(0, 6, 600, 'easeInOutQuad').setLoop(true).play();
+    }
+});
+
+// ==========================================
 // 障害物クラス (Sprite + setFrameIndex)
 // ==========================================
 phina.define('Obstacle', {
@@ -671,6 +719,30 @@ phina.define('ExplosiveObstacle', {
         this.superInit(stageNum);
         this.isExplosive = true;
         this.updateLabel();
+    }
+});
+
+// ==========================================
+// 壊れない障害物クラス（ダメージを受け付けない）
+// ==========================================
+phina.define('IndestructibleObstacle', {
+    superClass: 'Obstacle',
+    init: function (stageNum) {
+        this.superInit(stageNum);
+        this.isIndestructible = true;
+        // HPという概念を持たず、常に「無傷」の見た目を維持する
+        this.hp = 1;
+        this.maxHp = 1;
+        this.updateLabel();
+    },
+    // 常に固いブロックのフレーム
+    updateLabel: function () {
+        this.setFrameIndex(10, 64, 64);
+    },
+    // ダメージを一切受け付けない（破壊されない）。ノックバック演出のみ行う
+    damage: function (amount, scene) {
+        playSe('block');
+        this.tweener.clear().moveBy(4, 0, 40).moveBy(-4, 0, 40).play();
     }
 });
 
@@ -1281,6 +1353,7 @@ phina.define('MainScene', {
         this.bgGroup = DisplayElement().addChildTo(this);
         this.areaAttackGroup = DisplayElement().addChildTo(this);
         this.healItemGroup = DisplayElement().addChildTo(this);
+        this.shieldItemGroup = DisplayElement().addChildTo(this);
         this.obstacleGroup = DisplayElement().addChildTo(this);
         this.enemyGroup = DisplayElement().addChildTo(this);
         this.enemyBulletGroup = DisplayElement().addChildTo(this);
@@ -1310,6 +1383,9 @@ phina.define('MainScene', {
                 // HPが最大を超えないよう補正
                 this.player.stats.hp = Math.min(this.player.stats.hp, this.player.stats.maxHp);
             }
+            // シールドの残数・回復クールダウンも復元（未保存の旧セーブ互換のためnullチェック）
+            this.player.shieldCount = (d.shieldCount != null) ? d.shieldCount : this.player.stats.shieldLevel;
+            this.player.shieldCooldown = (d.shieldCooldown != null) ? d.shieldCooldown : 0;
         } else {
             // 新規ゲーム: パターンに応じた初期ステータスを適用
             let init = this.statPattern.init;
@@ -1678,6 +1754,7 @@ phina.define('MainScene', {
         this.enemyLaserGroup.children.clear();
         this.areaAttackGroup.children.clear();
         this.healItemGroup.children.clear();
+        this.shieldItemGroup.children.clear();
         this.obstacleGroup.children.clear();
         this.splitGroup.children.clear();
         this.playerBulletGroup.children.clear();
@@ -1844,10 +1921,15 @@ phina.define('MainScene', {
         // ---- 3. 障害物（中盤の反射ルート帯へ配置）----
         let normalObsCount = Math.randint(stageConfig.minNormalObs, stageConfig.maxNormalObs);
         let explosiveObsCount = Math.randint(stageConfig.minExplosiveObs, stageConfig.maxExplosiveObs);
+        let indestructibleObsCount = (stageConfig.minIndestructibleObs != null)
+            ? Math.randint(stageConfig.minIndestructibleObs, stageConfig.maxIndestructibleObs) : 0;
 
         let spawnObstacleType = (type, count) => {
             for (let i = 0; i < count; i++) {
-                let obs = (type === 'explosive') ? ExplosiveObstacle(this.stageNum) : Obstacle(this.stageNum);
+                let obs;
+                if (type === 'explosive') obs = ExplosiveObstacle(this.stageNum);
+                else if (type === 'indestructible') obs = IndestructibleObstacle(this.stageNum);
+                else obs = Obstacle(this.stageNum);
                 let placed = this.placeInZone(obs, grid, 4, 8, 0, 0);
                 if (!placed) placed = this.placeInZone(obs, grid, 2, 9, 0, 0);
                 if (placed) obs.addChildTo(this.obstacleGroup);
@@ -1855,6 +1937,7 @@ phina.define('MainScene', {
         };
         spawnObstacleType('normal', normalObsCount);
         spawnObstacleType('explosive', explosiveObsCount);
+        spawnObstacleType('indestructible', indestructibleObsCount);
 
         // ---- 4. 回復アイテム（残った隙間へ）----
         // 特定の名前の場合はHP回復アイテム出現率を倍にする（通常10% → 20%）
@@ -1864,6 +1947,16 @@ phina.define('MainScene', {
             let placed = this.placeInZone(item, grid, 3, 8, 4, 0);
             if (!placed) placed = this.placeInZone(item, grid, 1, 9, 0, 0);
             if (placed) item.addChildTo(this.healItemGroup);
+        }
+
+        // ---- 5. シールド回復アイテム（フィールドドロップ方式）----
+        // シールドスキル未取得、またはシールドが満タンの場合は出現させない（拾っても無駄になるため）
+        let shieldDeficit = this.player.stats.shieldLevel > 0 && this.player.shieldCount < this.player.stats.shieldLevel;
+        if (shieldDeficit && Math.random() < SHIELD_ITEM_SPAWN_RATE) {
+            let shieldItem = ShieldItem();
+            let placed = this.placeInZone(shieldItem, grid, 3, 8, 4, 0);
+            if (!placed) placed = this.placeInZone(shieldItem, grid, 1, 9, 0, 0);
+            if (placed) shieldItem.addChildTo(this.shieldItemGroup);
         }
 
         // スコア用：攻撃回数・多体撃破のカウンタをリセットし、初期敵数を記録
@@ -1931,7 +2024,14 @@ phina.define('MainScene', {
         if (p.areaLevel > 0) skillParts.push(`はんい:Lv.${p.areaLevel}`);
         if (p.pierceLevel > 0) skillParts.push(`かんつう:Lv.${p.pierceLevel}`);
         if (p.healOnKillLevel > 0) skillParts.push(`キルゲイン:Lv.${p.healOnKillLevel}`);
-        if (p.shieldLevel > 0) skillParts.push(`シールド:${this.player.shieldCount}/${p.shieldLevel}`);
+        if (p.shieldLevel > 0) {
+            let shieldText = `シールド:${this.player.shieldCount}/${p.shieldLevel}`;
+            //// 回復待ち中は残りステージ数を表示（例: 回復まであと2面）
+            //if (this.player.shieldCount < p.shieldLevel && this.player.shieldCooldown > 0) {
+            //    shieldText += `(回復まで${this.player.shieldCooldown})`;
+            //}
+            skillParts.push(shieldText);
+        }
         let skillLine = skillParts.length > 0 ? '\n' + skillParts.join('  ') : '';
         this.statusLabel.text = `${stageText}  ${this.score}ガバス\nHP: ${p.hp}/${p.maxHp}  ATK: ${p.atk}  DEF: ${p.def}  SPD: ${p.spd}${skillLine}`;
 
@@ -2107,10 +2207,24 @@ phina.define('MainScene', {
         this.updateStatusUI();
     },
 
+    // フィールドドロップのシールドアイテムを取得した時の処理（シールドを1個回復）
+    collectShieldItem: function () {
+        let p = this.player;
+        let cap = p.stats.shieldLevel;
+        if (cap <= 0) return;
+        p.shieldCount = Math.min(cap, p.shieldCount + 1);
+        // 満タンになったらクールダウンのカウントは不要
+        if (p.shieldCount >= cap) p.shieldCooldown = 0;
+        playSe('get');
+        this.updateStatusUI();
+    },
+
     // プレイヤー専用ダメージ（シールドがあれば1回分無効化）
     damagePlayer: function (amount) {
         if (this.player.shieldCount > 0) {
             this.player.shieldCount--;
+            // シールドが壊れたら自動回復のカウントダウンを（再）開始する
+            this.player.shieldCooldown = SHIELD_REGEN_INTERVAL;
             playSe('reflect');
             this.updateStatusUI();
             return;
@@ -2119,12 +2233,38 @@ phina.define('MainScene', {
         playSe('damage');
     },
 
+    // ステージクリア時に呼び出す：シールドのクールダウンを1ステージ分進める
+    tickShieldCooldown: function () {
+        let p = this.player;
+        let cap = p.stats.shieldLevel;
+        if (cap <= 0 || p.shieldCount >= cap) {
+            p.shieldCooldown = 0;
+            return;
+        }
+        if (p.shieldCooldown > 0) {
+            p.shieldCooldown--;
+            if (p.shieldCooldown <= 0) {
+                p.shieldCount = Math.min(cap, p.shieldCount + 1);
+                playSe('get');
+                // まだ上限に達していなければ、次の回復に向けて再度カウントを開始する
+                p.shieldCooldown = (p.shieldCount < cap) ? SHIELD_REGEN_INTERVAL : 0;
+            }
+        }
+    },
+
     handleCollisions: function () {
         let p = this.player, v = p.physical.velocity;
 
         this.healItemGroup.children.concat().forEach(item => {
             if (p.hitTestElement(item)) {
                 this.healPlayer(item.healRatio);
+                item.remove();
+            }
+        });
+
+        this.shieldItemGroup.children.concat().forEach(item => {
+            if (p.hitTestElement(item)) {
+                this.collectShieldItem();
                 item.remove();
             }
         });
@@ -2202,6 +2342,13 @@ phina.define('MainScene', {
             this.healItemGroup.children.concat().forEach(item => {
                 if (s.hitTestElement(item)) {
                     this.healPlayer(item.healRatio);
+                    item.remove();
+                }
+            });
+
+            this.shieldItemGroup.children.concat().forEach(item => {
+                if (s.hitTestElement(item)) {
+                    this.collectShieldItem();
                     item.remove();
                 }
             });
@@ -2528,8 +2675,14 @@ phina.define('MainScene', {
                 else {
                     this.player.stats[c.key] += c.val;
                     if (c.key === 'maxHp') this.player.stats.hp += c.val;
-                    if (c.key === 'shieldLevel') this.player.shieldCount = this.player.stats.shieldLevel;
+                    if (c.key === 'shieldLevel') {
+                        this.player.shieldCount = this.player.stats.shieldLevel;
+                        this.player.shieldCooldown = 0; // 満タンになったのでクールダウンは停止
+                    }
                 }
+                // シールドのクールダウンをステージクリア1回分進める（クールダウン式自動回復）
+                this.tickShieldCooldown();
+
                 this.stageNum++;
 
                 // 次のステージに遷移する直前に自動セーブ
@@ -2537,7 +2690,9 @@ phina.define('MainScene', {
                     playerName: this.playerName,
                     stageNum: this.stageNum,
                     score: this.score,
-                    stats: Object.assign({}, this.player.stats)
+                    stats: Object.assign({}, this.player.stats),
+                    shieldCount: this.player.shieldCount,
+                    shieldCooldown: this.player.shieldCooldown
                 });
 
                 panel.remove();
