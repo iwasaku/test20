@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.8';
+const VERSION_STR = '1.8.1';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -1831,7 +1831,7 @@ phina.define('MainScene', {
 
             // 追加ボス
             // stage 90: 過去ボスではなく、このステージのボス（忍者）を複数体出現
-            // それ以外: 過去のボスから選出・重複なし（0.75倍に弱体化）
+            // それ以外: 過去のボスから選出・重複なし
             if (this.stageNum === 90) {
                 for (let i = 0; i < extraBossCount; i++) {
                     let extraBoss = Object.assign({}, bossDef, {
@@ -1847,12 +1847,11 @@ phina.define('MainScene', {
                 for (let i = 0; i < extraBossCount && previousBosses.length > 0; i++) {
                     let idx = Math.randint(0, previousBosses.length - 1);
                     let extraDef = previousBosses.splice(idx, 1)[0];
-                    // 追加ボスは少し弱体化（HP・攻撃・防御を0.75倍）
                     let extraBoss = Object.assign({}, extraDef, {
                         isBoss: true,
-                        hp: Math.floor(extraDef.hp * 0.75),
-                        atk: Math.floor(extraDef.atk * 0.75),
-                        def: Math.floor(extraDef.def * 0.75)
+                        hp: extraDef.hp,
+                        atk: extraDef.atk,
+                        def: extraDef.def
                     });
                     enemiesToSpawn.push(extraBoss);
                 }
@@ -2654,8 +2653,8 @@ phina.define('MainScene', {
             params.push({ key: 'areaLevel', label: 'はんい +1', val: 1, fill: '#ef6c00' });    // 橙
             params.push({ key: 'pierceLevel', label: 'かんつう +1', val: 1, fill: '#00acc1' });  // 水色
         } else {
-            if (hasSplit) params.push({ key: 'splitLevel', label: 'ぶんれつ +1', val: 1, fill: '#6a1b9a' });
-            if (hasShotgun) params.push({ key: 'shotgunLevel', label: 'さんだん +1', val: 1, fill: '#f9a825' });
+            if (hasSplit && (Math.random() < 0.5)) params.push({ key: 'splitLevel', label: 'ぶんれつ +1', val: 1, fill: '#6a1b9a' });
+            if (hasShotgun && (Math.random() < 0.5)) params.push({ key: 'shotgunLevel', label: 'さんだん +1', val: 1, fill: '#f9a825' });
             if (hasArea) params.push({ key: 'areaLevel', label: 'はんい +1', val: 1, fill: '#ef6c00' });
             if (hasPierce) params.push({ key: 'pierceLevel', label: 'かんつう +1', val: 1, fill: '#00acc1' });
         }
