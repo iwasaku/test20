@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.8.1';
+const VERSION_STR = '1.8.2';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -50,7 +50,7 @@ const calcDamage = function (atk, def) {
 // Lv6: 1.15 / Lv7: 1.30 / Lv8: 1.45 ...
 const getSkillDmgMult = function (level) {
     if (!level || level <= 5) return 1.0;
-    return 1.0 + (level - 5) * 0.15;
+    return 1.0 + ((level - 5) * 0.15) * 0.9;//　0.9:超過分が強すぎたのでデバフ
 };
 
 // stats.hp を持つ対象にHPを下回らせずにダメージを与える
