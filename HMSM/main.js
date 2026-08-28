@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.8.2';
+const VERSION_STR = '1.8.3';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -51,6 +51,22 @@ const calcDamage = function (atk, def) {
 const getSkillDmgMult = function (level) {
     if (!level || level <= 5) return 1.0;
     return 1.0 + ((level - 5) * 0.15) * 0.9;//　0.9:超過分が強すぎたのでデバフ
+};
+
+// 貫通ヒット時の速度維持率（ダメージ倍率とは別枠。低Lvでも大きく失速しないようにする）
+// Lv1: 0.87 / Lv5: 0.95 / Lv8以降: 1.0（頭打ち）
+const PIERCE_VELOCITY_RETAIN_BASE = 0.85;
+const PIERCE_VELOCITY_RETAIN_PER_LEVEL = 0.02;
+const getPierceVelocityRetain = function (level) {
+    return Math.min(1.0, PIERCE_VELOCITY_RETAIN_BASE + (level || 0) * PIERCE_VELOCITY_RETAIN_PER_LEVEL);
+};
+
+// 貫通ヒット時のダメージ倍率（低Lv時の下限を引き上げ、Lv5で100%に到達する点は維持）
+// Lv1: 0.76 / Lv2: 0.82 / Lv3: 0.88 / Lv4: 0.94 / Lv5: 1.00
+const PIERCE_DAMAGE_RATE_BASE = 0.7;
+const PIERCE_DAMAGE_RATE_PER_LEVEL = 0.06;
+const getPierceDamageRate = function (level) {
+    return PIERCE_DAMAGE_RATE_BASE + (level || 0) * PIERCE_DAMAGE_RATE_PER_LEVEL;
 };
 
 // stats.hp を持つ対象にHPを下回らせずにダメージを与える
@@ -2307,14 +2323,14 @@ phina.define('MainScene', {
                 let comboMult = Math.pow(1.1, this.comboCount - 1);
 
                 if (isPierce) {
-                    let rate = 0.5 + (p.stats.pierceLevel * 0.1);
+                    let rate = getPierceDamageRate(p.stats.pierceLevel);
                     let skillMult = getSkillDmgMult(p.stats.pierceLevel);
                     let atkDamage = calcDamage((p.stats.atk * this.currentMultiplier * comboMult * skillMult * p.hiddenAtkMult) * rate, enemy.stats.def);
 
                     enemy.damage(atkDamage);
 
-                    // 速度減衰は最大1.0まで（Lv6以上で加速しすぎないよう）
-                    p.physical.velocity.mul(Math.min(1.0, rate));
+                    // 速度維持率はダメージ倍率(rate)とは切り離し、低Lvでも大きく失速しないようにする
+                    p.physical.velocity.mul(getPierceVelocityRetain(p.stats.pierceLevel));
 
                     if (enemy.stats.hp <= 0) { this.defeatEnemy(enemy, enemy.baseScore); }
                 } else {
