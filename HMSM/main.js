@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.8.3';
+const VERSION_STR = '1.8.4';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -67,6 +67,14 @@ const PIERCE_DAMAGE_RATE_BASE = 0.7;
 const PIERCE_DAMAGE_RATE_PER_LEVEL = 0.06;
 const getPierceDamageRate = function (level) {
     return PIERCE_DAMAGE_RATE_BASE + (level || 0) * PIERCE_DAMAGE_RATE_PER_LEVEL;
+};
+
+// 貫通スキルで同一ショット中に同じ敵へ当てられる最大回数（Lvに応じて増加、Lv9以降は頭打ち）
+// Lv1-2:1回 / Lv3-4:2回 / Lv5-6:3回 / Lv7-8:4回 / Lv9以上:5回
+const PIERCE_MAX_HITS_CAP = 5;
+const getPierceMaxHitsPerEnemy = function (level) {
+    if (!level || level <= 0) return 1;
+    return Math.min(PIERCE_MAX_HITS_CAP, 1 + Math.floor((level - 1) / 2));
 };
 
 // stats.hp を持つ対象にHPを下回らせずにダメージを与える
@@ -562,6 +570,8 @@ phina.define('Player', {
         this.stats = { hp: 100, maxHp: 100, atk: 10, def: 5, spd: 30, splitLevel: 0, shotgunLevel: 0, areaLevel: 0, pierceLevel: 0, healOnKillLevel: 0, shieldLevel: 0 };
         this.physical.friction = 0.96;
         this.hitEnemies = []; // 貫通時の「同一ショット中同一敵1回まで」判定用リスト（非貫通時は複数ヒット可）
+        this.pierceHitCounts = new Map(); // 貫通時「同一ショット中に同じ敵へ当てた回数」（Lvに応じた上限まで複数回ヒット可）
+        this.pierceTouching = new Set(); // 貫通時「現在接触中の敵」（デバウンス用：離れて再接触するまで再カウントしない）
         this.hiddenAtkMult = 1.0; // 隠し攻撃力倍率（特定名前で上昇。ステータス表示には出さない）
         this.shieldCount = 0; // 現在のシールド残数
         this.shieldCooldown = 0; // 次のシールド自動回復までの残りステージ数（0=カウント停止中）
@@ -572,6 +582,8 @@ phina.define('Player', {
         this.y = LIMIT_BOTTOM - 100;
         this.physical.velocity.set(0, 0);
         this.hitEnemies = [];
+        this.pierceHitCounts = new Map();
+        this.pierceTouching = new Set();
     }
 });
 
@@ -2073,6 +2085,8 @@ phina.define('MainScene', {
         if (vec.length() > 10) {
             this.gameState = GAME_STATE.MOVING;
             this.player.hitEnemies = [];
+            this.player.pierceHitCounts = new Map();
+            this.player.pierceTouching = new Set();
             this.comboCount = 0;
             this.shotCount++;
             this.killsThisShot = 0;
@@ -2308,12 +2322,31 @@ phina.define('MainScene', {
             }
         });
 
+        // 貫通デバウンス処理: 前フレームまで接触していたが今は離れた敵をtouchingから除去
+        // （これにより「一度離れて再接触」した時だけ新たなヒットとしてカウントされる）
+        if (p.pierceTouching.size > 0) {
+            p.pierceTouching.forEach(enemy => {
+                if (!hitTestWithHitbox(p, enemy)) {
+                    p.pierceTouching.delete(enemy);
+                }
+            });
+        }
+
         this.enemyGroup.children.concat().forEach(enemy => {
             if (hitTestWithHitbox(p, enemy)) {
-                // 貫通スキル所持時のみ「同一ショット中は同じ敵に1回まで」を適用
-                // （貫通なし時は反射後に再接触すれば複数回ヒット可能）
+                // 貫通スキル所持時は「同一ショット中に同じ敵へ当てられる回数」をLvに応じた上限まで許可
+                // （貫通なし時は反射後に再接触すれば無制限にヒット可能）
                 let isPierce = p.stats.pierceLevel > 0;
-                if (isPierce && p.hitEnemies.includes(enemy)) return;
+                if (isPierce) {
+                    // 接触が継続中（同一パスの最中）なら再カウントしない
+                    if (p.pierceTouching.has(enemy)) return;
+                    p.pierceTouching.add(enemy);
+
+                    let hitCount = p.pierceHitCounts.get(enemy) || 0;
+                    let maxHits = getPierceMaxHitsPerEnemy(p.stats.pierceLevel);
+                    if (hitCount >= maxHits) return; // 上限到達後はダメージなしですり抜けるだけ
+                    p.pierceHitCounts.set(enemy, hitCount + 1);
+                }
 
                 if (!p.hitEnemies.includes(enemy)) {
                     p.hitEnemies.push(enemy);
