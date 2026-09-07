@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.9.0';
+const VERSION_STR = '1.9.1';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -47,10 +47,11 @@ const calcDamage = function (atk, def) {
 };
 
 // スキルLvによるダメージ倍率（Lv1〜5は1.0、Lv6以降は超過分で上昇）
-// Lv6: 1.15 / Lv7: 1.30 / Lv8: 1.45 ...
+// 平方根カーブで逓減：Lv10:1.78 / Lv20:2.36 / Lv50:3.35 / Lv100:4.41 ...
+// （本数側のgetSkillInstanceCountと同じ「頭打ち」思想に揃えるため線形増加から変更）
 const getSkillDmgMult = function (level) {
     if (!level || level <= 5) return 1.0;
-    return 1.0 + ((level - 5) * 0.15) * 0.9;//　0.9:超過分が強すぎたのでデバフ
+    return 1.0 + Math.sqrt(level - 5) * 0.35;
 };
 
 // スキルLv→本数（弾数/分裂数/範囲攻撃数）変換
