@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.8.4';
+const VERSION_STR = '1.9.0';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -51,6 +51,25 @@ const calcDamage = function (atk, def) {
 const getSkillDmgMult = function (level) {
     if (!level || level <= 5) return 1.0;
     return 1.0 + ((level - 5) * 0.15) * 0.9;//　0.9:超過分が強すぎたのでデバフ
+};
+
+// スキルLv→本数（弾数/分裂数/範囲攻撃数）変換
+// Lv1〜5は現行どおり本数=Lvのまま（序盤〜中盤の挙動は変えない）
+// Lv6以降は三角数方式：次の1本を得るのに必要な追加Lvが1ずつ増えていく
+// （Lv5=5本 → Lv7=6本 → Lv10=7本 → Lv14=8本 → Lv19=9本 → Lv25=10本 ...）
+const getSkillInstanceCount = function (level) {
+    if (!level || level <= 0) return 0;
+    if (level <= 5) return level;
+
+    let instances = 5;
+    let need = 2; // 6本目に必要な追加Lvから開始し、1本増えるごとに+1される
+    let remaining = level - 5;
+    while (remaining >= need) {
+        remaining -= need;
+        instances++;
+        need++;
+    }
+    return instances;
 };
 
 // 貫通ヒット時の速度維持率（ダメージ倍率とは別枠。低Lvでも大きく失速しないようにする）
@@ -2209,7 +2228,8 @@ phina.define('MainScene', {
     fireShotgun: function (x, y) {
         let baseSpeed = 12; let angles = [0, 45, 90, 135, 180, 225, 270, 315];
         let dmgAtk = this.player.stats.atk * getSkillDmgMult(this.player.stats.shotgunLevel) * this.player.hiddenAtkMult;
-        for (let i = 0; i < this.player.stats.shotgunLevel; i++) {
+        let shotgunInstances = getSkillInstanceCount(this.player.stats.shotgunLevel);
+        for (let i = 0; i < shotgunInstances; i++) {
             let speed = Math.max(4, baseSpeed - (i * 2));
             angles.forEach(angle => {
                 let rad = (angle * Math.PI) / 180;
@@ -2221,7 +2241,8 @@ phina.define('MainScene', {
     triggerAreaAttack: function () {
         if (this.player.stats.areaLevel <= 0) return;
         let dmgAtk = this.player.stats.atk * getSkillDmgMult(this.player.stats.areaLevel) * this.player.hiddenAtkMult;
-        for (let i = 0; i < this.player.stats.areaLevel; i++) {
+        let areaInstances = getSkillInstanceCount(this.player.stats.areaLevel);
+        for (let i = 0; i < areaInstances; i++) {
             let rx = Math.randint(LIMIT_LEFT + 40, LIMIT_RIGHT - 40);
             let ry = Math.randint(LIMIT_TOP + 40, LIMIT_BOTTOM - 40);
             PlayerAreaAttack(rx, ry, dmgAtk).addChildTo(this.playerAreaAttackGroup);
@@ -2379,7 +2400,8 @@ phina.define('MainScene', {
         if (this.player.stats.splitLevel <= 0) return;
         let v = this.player.physical.velocity;
         let dmgAtk = this.player.stats.atk * getSkillDmgMult(this.player.stats.splitLevel) * this.player.hiddenAtkMult;
-        for (let i = 0; i < this.player.stats.splitLevel; i++) {
+        let splitInstances = getSkillInstanceCount(this.player.stats.splitLevel);
+        for (let i = 0; i < splitInstances; i++) {
             let angle = Math.atan2(v.y, v.x) + (Math.random() - 0.5);
             SplitPlayer(this.player.x, this.player.y, Math.cos(angle) * v.length(), Math.sin(angle) * v.length(), dmgAtk).addChildTo(this.splitGroup);
         }
