@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.9.1';
+const VERSION_STR = '1.9.2';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -71,6 +71,13 @@ const getSkillInstanceCount = function (level) {
         need++;
     }
     return instances;
+};
+
+// はんい（PlayerAreaAttack）の爆発半径。Lv1〜5は現行の110のまま、
+// Lv6以降は緩やかに縮小し、Lv30で下限90に到達して以降は頭打ち
+const getAreaRadius = function (level) {
+    if (!level || level <= 5) return 110;
+    return Math.max(90, 110 - Math.sqrt(level - 5) * 4.0);
 };
 
 // 貫通ヒット時の速度維持率（ダメージ倍率とは別枠。低Lvでも大きく失速しないようにする）
@@ -641,13 +648,14 @@ phina.define('PlayerBullet', {
 // ==========================================
 phina.define('PlayerAreaAttack', {
     superClass: 'CircleShape',
-    init: function (x, y, atk) {
+    init: function (x, y, atk, explodedRadius) {
         this.superInit({ radius: 90, fill: 'rgba(0, 255, 255, 0.2)', stroke: '#00ffff', strokeWidth: 3 });
         this.setPosition(x, y);
         this.atk = atk;
         this.timer = 45;
         this.isExploded = false;
         this.hasDamaged = false;
+        this.explodedRadius = explodedRadius || 110;
         this.tweener.to({ alpha: 0.6 }, 150).to({ alpha: 0.2 }, 150).setLoop(true).play();
     },
     update: function () {
@@ -658,7 +666,7 @@ phina.define('PlayerAreaAttack', {
             this.tweener.clear();
             this.fill = 'rgba(0, 200, 255, 0.8)';
             this.stroke = 'white';
-            this.radius = 110;
+            this.radius = this.explodedRadius;
             playSe('area_explode');
             this.tweener.wait(200).call(() => { this.remove(); }).play();
         }
@@ -2243,10 +2251,11 @@ phina.define('MainScene', {
         if (this.player.stats.areaLevel <= 0) return;
         let dmgAtk = this.player.stats.atk * getSkillDmgMult(this.player.stats.areaLevel) * this.player.hiddenAtkMult;
         let areaInstances = getSkillInstanceCount(this.player.stats.areaLevel);
+        let explodedRadius = getAreaRadius(this.player.stats.areaLevel);
         for (let i = 0; i < areaInstances; i++) {
             let rx = Math.randint(LIMIT_LEFT + 40, LIMIT_RIGHT - 40);
             let ry = Math.randint(LIMIT_TOP + 40, LIMIT_BOTTOM - 40);
-            PlayerAreaAttack(rx, ry, dmgAtk).addChildTo(this.playerAreaAttackGroup);
+            PlayerAreaAttack(rx, ry, dmgAtk, explodedRadius).addChildTo(this.playerAreaAttackGroup);
         }
     },
 
