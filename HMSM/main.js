@@ -1,6 +1,6 @@
 phina.globalize();
 
-const VERSION_STR = '1.9.2';
+const VERSION_STR = '1.9.3';
 
 // セーブデータ関連
 const hasSaveData = function () {
@@ -74,10 +74,10 @@ const getSkillInstanceCount = function (level) {
 };
 
 // はんい（PlayerAreaAttack）の爆発半径。Lv1〜5は現行の110のまま、
-// Lv6以降は緩やかに縮小し、Lv30で下限90に到達して以降は頭打ち
+// Lv6以降は緩やかに縮小し続け、Lv62前後で下限80に到達して以降は頭打ち
 const getAreaRadius = function (level) {
     if (!level || level <= 5) return 110;
-    return Math.max(90, 110 - Math.sqrt(level - 5) * 4.0);
+    return Math.max(80, 110 - Math.sqrt(level - 5) * 4.0);
 };
 
 // 貫通ヒット時の速度維持率（ダメージ倍率とは別枠。低Lvでも大きく失速しないようにする）
